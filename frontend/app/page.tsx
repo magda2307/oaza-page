@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getCats } from '@/lib/api'
 import type { Cat } from '@/types'
+import CatCarousel from '@/components/CatCarousel'
 
 export const metadata: Metadata = {
   title: 'Oaza — koty, których nikt inny nie przyjmie',
@@ -30,9 +31,12 @@ const adoptionSteps = [
 
 export default async function HomePage() {
   let featuredCats: Cat[] = []
+  let carouselCats: Cat[] = []
   try {
     const all = await getCats()
-    featuredCats = all.filter((c) => !c.is_adopted).slice(0, 3)
+    const available = all.filter((c) => !c.is_adopted)
+    featuredCats = available.slice(0, 3)
+    carouselCats = available
   } catch {
     // API unavailable at build time — render page without live cats
   }
@@ -75,6 +79,9 @@ export default async function HomePage() {
           </p>
         </div>
       </section>
+
+      {/* ── Cat carousel ──────────────────────────────────────────────────── */}
+      <CatCarousel cats={carouselCats} />
 
       {/* ── Stats bar ─────────────────────────────────────────────────────── */}
       {/* TODO: pull from API or CMS */}
