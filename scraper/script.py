@@ -8,7 +8,7 @@ SETUP:
   pip install playwright beautifulsoup4
   playwright install chromium
 
-USAGE:
+USAGE: 
   python script.py
   python script.py --url https://www.facebook.com/Kociooaza/ --max-posts 100
   python script.py --no-headless   # watch the browser (good for debugging)
