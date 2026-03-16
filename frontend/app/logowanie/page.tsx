@@ -80,7 +80,7 @@ export default function LogowaniePage() {
       <h1 className="text-2xl font-bold text-stone-900 mb-2">Zaloguj się</h1>
       <p className="text-stone-500 mb-8">
         Nie masz konta?{' '}
-        <Link href="/rejestracja" className="text-brand-600 hover:underline">
+        <Link href="/rejestracja" className="text-oaza-rust hover:underline">
           Zarejestruj się
         </Link>
       </p>

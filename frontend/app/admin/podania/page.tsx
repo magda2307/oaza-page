@@ -44,7 +44,7 @@ export default function AdminPodaniaPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       <nav className="text-sm text-stone-400 mb-8">
-        <Link href="/admin" className="hover:text-brand-600">Admin</Link>
+        <Link href="/admin" className="hover:text-oaza-green">Admin</Link>
         {' › '}
         <span className="text-stone-700">Podania</span>
       </nav>
@@ -62,7 +62,7 @@ export default function AdminPodaniaPage() {
                 <p className="font-semibold text-stone-800">
                   {app.user_email}{' '}
                   <span className="text-stone-400 font-normal">→</span>{' '}
-                  <Link href={`/koty/${app.cat_id}`} className="text-brand-600 hover:underline">
+                  <Link href={`/koty/${app.cat_id}`} className="text-oaza-rust hover:underline">
                     {app.cat_name ?? `Kot #${app.cat_id}`}
                   </Link>
                 </p>

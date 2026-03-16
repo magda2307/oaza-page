@@ -3,7 +3,8 @@
     "allow": [
       "Bash(claude agents:*)",
       "Bash(npx skills:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(find:*)"
     ]
   }
 }

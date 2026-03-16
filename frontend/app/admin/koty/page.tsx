@@ -39,7 +39,7 @@ export default function AdminKotyPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <nav className="text-sm text-stone-400 mb-1">
-            <Link href="/admin" className="hover:text-brand-600">Admin</Link>
+            <Link href="/admin" className="hover:text-oaza-green">Admin</Link>
             {' › '}
             <span className="text-stone-700">Koty</span>
           </nav>

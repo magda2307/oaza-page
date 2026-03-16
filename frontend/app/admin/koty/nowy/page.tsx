@@ -51,9 +51,9 @@ export default function AdminNowyKotPage() {
   return (
     <div className="max-w-xl mx-auto px-4 py-12">
       <nav className="text-sm text-stone-400 mb-8">
-        <Link href="/admin" className="hover:text-brand-600">Admin</Link>
+        <Link href="/admin" className="hover:text-oaza-green">Admin</Link>
         {' › '}
-        <Link href="/admin/koty" className="hover:text-brand-600">Koty</Link>
+        <Link href="/admin/koty" className="hover:text-oaza-green">Koty</Link>
         {' › '}
         <span className="text-stone-700">Nowy</span>
       </nav>

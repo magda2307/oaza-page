@@ -10,7 +10,7 @@ export default function WspierajPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
       <nav className="text-sm text-stone-400 mb-8">
-        <Link href="/" className="hover:text-brand-600">Strona główna</Link>
+        <Link href="/" className="hover:text-oaza-green">Strona główna</Link>
         {' › '}
         <span className="text-stone-700">Wspieraj</span>
       </nav>
@@ -30,13 +30,13 @@ export default function WspierajPage() {
           { amount: '500 zł', what: 'pozwala sfinansować drobny zabieg chirurgiczny' },
         ].map(({ amount, what }) => (
           <div key={amount} className="flex gap-4 items-start bg-white rounded-xl border border-stone-200 p-5">
-            <span className="text-xl font-bold text-brand-600 w-20 shrink-0">{amount}</span>
+            <span className="text-xl font-bold text-oaza-green w-20 shrink-0">{amount}</span>
             <p className="text-stone-600">{what}</p>
           </div>
         ))}
       </div>
 
-      <div className="bg-brand-50 rounded-2xl p-8">
+      <div className="bg-oaza-warm rounded-2xl p-8">
         <h2 className="text-xl font-bold text-stone-800 mb-3">Jak wpłacić?</h2>
         <p className="text-stone-600 mb-4">
           Darowizny przyjmujemy przelewem na konto organizacji. Skontaktuj się z nami,

@@ -57,8 +57,8 @@ export default function AplikujPage({ params }: { params: { id: string } }) {
   return (
     <div className="max-w-lg mx-auto px-4 py-12">
       <nav className="text-sm text-stone-400 mb-8">
-        <Link href="/koty" className="hover:text-brand-600">Koty</Link>
-        {cat && <>{' › '}<Link href={`/koty/${catId}`} className="hover:text-brand-600">{cat.name}</Link></>}
+        <Link href="/koty" className="hover:text-oaza-green">Koty</Link>
+        {cat && <>{' › '}<Link href={`/koty/${catId}`} className="hover:text-oaza-green">{cat.name}</Link></>}
         {' › '}
         <span className="text-stone-700">Podanie o adopcję</span>
       </nav>

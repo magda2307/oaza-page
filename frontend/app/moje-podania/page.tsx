@@ -39,7 +39,7 @@ export default function MojePodaniaPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
       <nav className="text-sm text-stone-400 mb-8">
-        <Link href="/" className="hover:text-brand-600">Strona główna</Link>
+        <Link href="/" className="hover:text-oaza-green">Strona główna</Link>
         {' › '}
         <span className="text-stone-700">Moje podania</span>
       </nav>
@@ -63,7 +63,7 @@ export default function MojePodaniaPage() {
               <div>
                 <Link
                   href={`/koty/${app.cat_id}`}
-                  className="font-semibold text-stone-800 hover:text-brand-600 transition-colors"
+                  className="font-semibold text-stone-800 hover:text-oaza-green transition-colors"
                 >
                   Kot #{app.cat_id}
                 </Link>

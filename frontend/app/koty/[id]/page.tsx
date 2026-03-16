@@ -30,9 +30,9 @@ export default async function KotPage({ params }: Props) {
     <div className="max-w-4xl mx-auto px-4 py-12">
       {/* Breadcrumb */}
       <nav className="text-sm text-stone-400 mb-8">
-        <Link href="/" className="hover:text-brand-600">Strona główna</Link>
+        <Link href="/" className="hover:text-oaza-green">Strona główna</Link>
         {' › '}
-        <Link href="/koty" className="hover:text-brand-600">Koty</Link>
+        <Link href="/koty" className="hover:text-oaza-green">Koty</Link>
         {' › '}
         <span className="text-stone-700">{cat.name}</span>
       </nav>
@@ -96,7 +96,7 @@ export default async function KotPage({ params }: Props) {
 
           <p className="mt-6 text-xs text-stone-400">
             Nie możesz adoptować?{' '}
-            <Link href="/wspieraj" className="underline hover:text-brand-600">
+            <Link href="/wspieraj" className="underline hover:text-oaza-rust">
               Wesprzyj finansowo leczenie {cat.name}.
             </Link>
           </p>

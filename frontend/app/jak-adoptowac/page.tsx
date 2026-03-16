@@ -38,7 +38,7 @@ export default function JakAdoptowaPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
       <nav className="text-sm text-stone-400 mb-8">
-        <Link href="/" className="hover:text-brand-600">Strona główna</Link>
+        <Link href="/" className="hover:text-oaza-green">Strona główna</Link>
         {' › '}
         <span className="text-stone-700">Jak adoptować</span>
       </nav>
@@ -52,7 +52,7 @@ export default function JakAdoptowaPage() {
       <div className="space-y-8">
         {steps.map((step) => (
           <div key={step.num} className="flex gap-6">
-            <div className="text-3xl font-bold text-brand-200 w-12 shrink-0 pt-0.5">
+            <div className="text-3xl font-bold text-oaza-green/30 w-12 shrink-0 pt-0.5">
               {step.num}
             </div>
             <div>
@@ -63,7 +63,7 @@ export default function JakAdoptowaPage() {
         ))}
       </div>
 
-      <div className="mt-14 bg-brand-50 rounded-2xl p-8 text-center">
+      <div className="mt-14 bg-oaza-warm rounded-2xl p-8 text-center">
         <h2 className="text-xl font-bold text-stone-800 mb-3">Gotowy na poznanie kotów?</h2>
         <p className="text-stone-600 mb-6">
           Każdy kot w Oazie ma aktualną dokumentację weterynaryjną. O stanie zdrowia informujemy

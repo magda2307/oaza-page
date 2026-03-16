@@ -9,7 +9,7 @@ export default function PrywatnoscPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
       <nav className="text-sm text-stone-400 mb-8">
-        <Link href="/" className="hover:text-brand-600">Strona główna</Link>
+        <Link href="/" className="hover:text-oaza-green">Strona główna</Link>
         {' › '}
         <span className="text-stone-700">Polityka prywatności</span>
       </nav>

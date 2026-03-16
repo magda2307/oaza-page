@@ -10,7 +10,7 @@ export default function KontaktPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
       <nav className="text-sm text-stone-400 mb-8">
-        <Link href="/" className="hover:text-brand-600">Strona główna</Link>
+        <Link href="/" className="hover:text-oaza-green">Strona główna</Link>
         {' › '}
         <span className="text-stone-700">Kontakt</span>
       </nav>
@@ -26,7 +26,7 @@ export default function KontaktPage() {
           <p className="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-1">E-mail</p>
           <a
             href="mailto:kontakt@oaza.pl"
-            className="text-brand-600 font-medium hover:underline text-lg"
+            className="text-oaza-rust font-medium hover:underline text-lg"
           >
             kontakt@oaza.pl
           </a>
@@ -45,7 +45,7 @@ export default function KontaktPage() {
 
       <p className="mt-8 text-sm text-stone-400">
         Jeśli jesteś w trakcie składania podania — śledź status w{' '}
-        <Link href="/moje-podania" className="underline hover:text-brand-600">
+        <Link href="/moje-podania" className="underline hover:text-oaza-green">
           swoim koncie
         </Link>.
       </p>
