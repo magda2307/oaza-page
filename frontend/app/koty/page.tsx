@@ -97,7 +97,7 @@ function CatCard({ cat }: { cat: Cat }) {
         {cat.description && (
           <p className="mt-2 text-sm text-stone-600 line-clamp-2">{cat.description}</p>
         )}
-        <span className="mt-4 inline-block text-sm text-brand-600 font-medium group-hover:underline">
+        <span className="mt-4 inline-block text-sm text-oaza-rust font-medium group-hover:underline">
           Poznaj →
         </span>
       </div>

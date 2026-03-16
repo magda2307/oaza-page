@@ -70,7 +70,7 @@ export default function AdminKotyPage() {
             <div className="flex items-center gap-3 shrink-0">
               <Link
                 href={`/admin/koty/${cat.id}/edytuj`}
-                className="text-sm text-brand-600 hover:underline"
+                className="text-sm text-oaza-green hover:underline"
               >
                 Edytuj
               </Link>
