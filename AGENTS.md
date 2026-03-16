@@ -1,6 +1,78 @@
 # Claude Agents — Reference & Recommendations
 
-Quick guide to the 71 available agents. Pick the one that best matches your task.
+Quick guide to available agents. Pick the one that best matches your task.
+
+---
+
+## Landing Page Prompt
+
+**Agents used:** `ui-designer` + `frontend-developer` + skills: `copywriting`, `page-cro`, `marketing-psychology`
+
+**Why these:**
+- `ui-designer` — visual layout, component design, color/typography decisions
+- `frontend-developer` — implementation across the stack, API integration
+- `copywriting` — emotionally resonant headlines and cat descriptions that drive adoptions
+- `page-cro` — structuring sections so visitors actually click "Adopt" or "Donate"
+- `marketing-psychology` — urgency, social proof, emotional hooks for a charity context
+
+---
+
+### Prompt to paste into Claude Code
+
+```
+Use the ui-designer and frontend-developer agents together with the copywriting, page-cro, and marketing-psychology skills to build the landing front page for Catcharity — a cat adoption charity.
+
+## Context
+- Backend: FastAPI at localhost:8000
+- Key endpoints:
+  - GET /cats/ → returns list of available cats (fields: id, name, age_years, breed, description, photo_url, is_adopted)
+  - POST /applications/ → submit adoption application
+- Stack: choose the best fit (Next.js 14 App Router recommended for SEO + server components)
+- Style: warm, emotional, trustworthy — this is a charity, not a product store
+
+## Page sections to build (in order)
+
+1. **Hero**
+   - Full-width, emotionally powerful headline (use copywriting skill)
+   - Subheadline explaining what Catcharity does in one sentence
+   - Two CTAs: primary "Meet the cats" (scrolls to grid), secondary "Support us"
+   - Background: soft warm image or gradient, not sterile white
+
+2. **Stats bar**
+   - 3 numbers: cats rescued, cats adopted, years active (use placeholder numbers, mark as TODO)
+   - marketing-psychology: social proof — "You're not alone in caring"
+
+3. **Available cats grid**
+   - Fetch from GET /cats/ on server side
+   - Card per cat: photo, name, age, breed, short description, "Meet [Name]" button
+   - Max 6 on landing, "See all cats" link
+   - Empty state if no cats available
+   - page-cro: card layout should make the adopt CTA impossible to miss
+
+4. **How adoption works**
+   - 3-step visual: Browse → Apply → Welcome home
+   - Keep it frictionless — reduce fear of the process
+
+5. **Why adopt / emotional section**
+   - Short paragraph + quote from a fictional adopter (mark as placeholder)
+   - marketing-psychology: loss aversion + identity ("become someone who saves a life")
+
+6. **Donation / support CTA**
+   - Simple, not pushy — "Can't adopt? You can still help"
+   - One donate button (link placeholder for now)
+
+7. **Footer**
+   - Logo, nav links, social icons (placeholders), contact email
+
+## Requirements
+- Fully responsive (mobile-first)
+- Accessible: proper heading hierarchy, alt text, focus states
+- All copy written using the copywriting skill — warm, human, no corporate language
+- page-cro applied to every CTA: placement, contrast, microcopy on buttons
+- No placeholder lorem ipsum — write real copy using copywriting + marketing-psychology skills
+- Fetch cats server-side (Next.js server component or SSR) so the page is SEO-ready
+- Mark any hardcoded data with // TODO comments
+```
 
 ---
 
@@ -110,6 +182,25 @@ Quick guide to the 71 available agents. Pick the one that best matches your task
 
 ---
 
+## Marketing Skills (`coreyhaines31/marketingskills`)
+
+Installed as skills (invoke with `/skill-name` or "use copywriting" etc.).
+
+| Skill | Use when |
+|-------|----------|
+| `copywriting` | Writing page text, hero headlines, adoption descriptions, donation copy |
+| `page-cro` | Optimizing pages to convert visitors into adopters or donors |
+| `marketing-psychology` | Adding urgency, trust signals, emotional triggers to content |
+| `content-strategy` | Planning what pages to build and what content to write first |
+| `seo-audit` | Auditing existing pages for Google search visibility |
+| `ai-seo` | Optimizing for AI search ("cat adoption Warsaw" in ChatGPT/Gemini) |
+| `site-architecture` | Planning full site hierarchy and navigation before building |
+| `social-content` | Writing Instagram/Facebook posts for the charity |
+| `copy-editing` | Polishing all text before it goes live |
+| `launch-strategy` | Planning the public launch sequence |
+
+---
+
 ## Quick Decision Guide
 
 ```
@@ -133,4 +224,15 @@ Reviewing / testing?
 Exploring the codebase?          → Explore
 Planning an implementation?      → Plan
 Not sure?                        → general-purpose
+
+Marketing / content?
+  └─ Writing copy                → copywriting
+  └─ Improving conversions       → page-cro
+  └─ SEO / Google visibility     → seo-audit or ai-seo
+  └─ Planning site structure     → site-architecture
+  └─ Social media posts          → social-content
+  └─ Emotional hooks / urgency   → marketing-psychology
+  └─ Planning what to build      → content-strategy
+  └─ Polishing text              → copy-editing
+  └─ Going public                → launch-strategy
 ```

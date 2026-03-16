@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #faf9f7;
+  --foreground: #1c1917;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+@layer components {
+  /* Primary CTA — oaza-rust */
+  .btn-primary {
+    @apply inline-flex items-center justify-center bg-oaza-rust text-white font-semibold px-6 py-3 rounded-full hover:opacity-90 transition-opacity;
+  }
+
+  /* Secondary CTA — oaza-green outline */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center border border-oaza-green text-oaza-green font-semibold px-6 py-3 rounded-full hover:bg-oaza-green hover:text-white transition-colors;
+  }
+
+  /* Ghost CTA — white outline (for use on dark backgrounds) */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center border-2 border-white text-white font-semibold px-6 py-3 rounded-full hover:bg-white hover:text-oaza-green transition-colors;
+  }
+
+  /* Form input */
+  .input {
+    @apply w-full border border-stone-300 rounded-xl px-4 py-3 text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-oaza-green focus:border-transparent;
+  }
+
+  /* Card */
+  .card {
+    @apply bg-white rounded-2xl border border-stone-200 overflow-hidden hover:shadow-md transition-shadow;
+  }
+
+  /* Status badges */
+  .badge-pending {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800;
+  }
+  .badge-approved {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800;
+  }
+  .badge-rejected {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800;
+  }
+}
