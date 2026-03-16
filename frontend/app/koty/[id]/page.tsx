@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getCat } from '@/lib/api'
+import { CatTags } from '@/components/CatTags'
 
 type Props = { params: { id: string } }
 
@@ -81,6 +82,12 @@ export default async function KotPage({ params }: Props) {
 
           {cat.description && (
             <p className="mt-6 text-stone-700 leading-relaxed">{cat.description}</p>
+          )}
+
+          {cat.tags?.length > 0 && (
+            <div className="mt-6">
+              <CatTags tags={cat.tags} />
+            </div>
           )}
 
           {!cat.is_adopted && (

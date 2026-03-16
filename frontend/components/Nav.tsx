@@ -15,20 +15,15 @@ const navLinks = [
 export default function Nav() {
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [token, setToken] = useState<string | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
-    const t = localStorage.getItem('oaza_token')
-    const admin = localStorage.getItem('oaza_is_admin')
-    setToken(t)
-    setIsAdmin(admin === 'true')
+    setIsAdmin(localStorage.getItem('oaza_is_admin') === 'true')
   }, [])
 
   const logout = () => {
     localStorage.removeItem('oaza_token')
     localStorage.removeItem('oaza_is_admin')
-    setToken(null)
     setIsAdmin(false)
     window.location.href = '/'
   }
@@ -78,28 +73,13 @@ export default function Nav() {
 
         {/* Desktop right */}
         <div className="hidden md:flex items-center gap-3">
-          {token ? (
-            <>
-              <Link
-                href="/moje-podania"
-                className="text-sm text-stone-600 hover:text-oaza-green transition-colors"
-              >
-                Moje podania
-              </Link>
-              <button
-                onClick={logout}
-                className="text-sm text-stone-400 hover:text-stone-700 transition-colors"
-              >
-                Wyloguj
-              </button>
-            </>
-          ) : (
-            <Link
-              href="/logowanie"
-              className="text-sm text-stone-600 hover:text-oaza-green transition-colors"
+          {isAdmin && (
+            <button
+              onClick={logout}
+              className="text-sm text-stone-400 hover:text-stone-700 transition-colors"
             >
-              Zaloguj się
-            </Link>
+              Wyloguj
+            </button>
           )}
           <Link
             href="/koty"
@@ -150,24 +130,15 @@ export default function Nav() {
             </Link>
           ))}
           {isAdmin && (
-            <Link
-              href="/admin"
-              onClick={() => setMenuOpen(false)}
-              className="px-3 py-2 rounded-lg text-stone-700 hover:bg-stone-50"
-            >
-              Admin
-            </Link>
-          )}
-          <hr className="border-stone-100 my-2" />
-          {token ? (
             <>
               <Link
-                href="/moje-podania"
+                href="/admin"
                 onClick={() => setMenuOpen(false)}
                 className="px-3 py-2 rounded-lg text-stone-700 hover:bg-stone-50"
               >
-                Moje podania
+                Admin
               </Link>
+              <hr className="border-stone-100 my-2" />
               <button
                 onClick={() => { setMenuOpen(false); logout() }}
                 className="text-left px-3 py-2 rounded-lg text-stone-400 hover:bg-stone-50"
@@ -175,15 +146,8 @@ export default function Nav() {
                 Wyloguj
               </button>
             </>
-          ) : (
-            <Link
-              href="/logowanie"
-              onClick={() => setMenuOpen(false)}
-              className="px-3 py-2 rounded-lg text-stone-700 hover:bg-stone-50"
-            >
-              Zaloguj się
-            </Link>
           )}
+          <hr className="border-stone-100 my-2" />
           <Link
             href="/koty"
             onClick={() => setMenuOpen(false)}

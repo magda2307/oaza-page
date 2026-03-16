@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createCat } from '@/lib/api'
+import { TagPicker } from '@/components/CatTags'
 
 export default function AdminNowyKotPage() {
   const router = useRouter()
@@ -14,6 +15,7 @@ export default function AdminNowyKotPage() {
     description: '',
     photo_url: '',
   })
+  const [tags, setTags] = useState<string[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -37,6 +39,7 @@ export default function AdminNowyKotPage() {
           photo_url: form.photo_url || null,
           breed: form.breed || null,
           description: form.description || null,
+          tags,
         },
         token,
       )
@@ -80,6 +83,11 @@ export default function AdminNowyKotPage() {
         <div>
           <label className="block text-sm font-medium text-stone-700 mb-1">URL zdjęcia</label>
           <input type="url" className="input" value={form.photo_url} onChange={set('photo_url')} placeholder="https://..." />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-stone-700 mb-3">Etykiety</label>
+          <TagPicker selected={tags} onChange={setTags} />
         </div>
 
         {error && <div className="bg-red-50 text-red-700 rounded-xl px-4 py-3 text-sm">{error}</div>}

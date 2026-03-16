@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getCats } from '@/lib/api'
 import type { Cat } from '@/types'
+import { CatTagsCompact } from '@/components/CatTags'
 
 export const metadata: Metadata = {
   title: 'Koty do adopcji',
@@ -96,6 +97,11 @@ function CatCard({ cat }: { cat: Cat }) {
         </div>
         {cat.description && (
           <p className="mt-2 text-sm text-stone-600 line-clamp-2">{cat.description}</p>
+        )}
+        {cat.tags?.length > 0 && (
+          <div className="mt-3">
+            <CatTagsCompact tags={cat.tags} />
+          </div>
         )}
         <span className="mt-4 inline-block text-sm text-oaza-rust font-medium group-hover:underline">
           Poznaj →

@@ -47,36 +47,52 @@ export default async function HomePage() {
   return (
     <>
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section className="bg-oaza-green text-white">
-        <div className="max-w-5xl mx-auto px-4 pt-20 pb-24">
-          <p className="text-oaza-warm/70 text-xs font-semibold uppercase tracking-widest mb-5">
-            Warszawa · Przytulisko dla kotów
-          </p>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6 max-w-3xl">
-            Koty, których nikt inny nie chciał, żyją tutaj.
-          </h1>
-          <p className="text-green-100 text-lg leading-relaxed mb-10 max-w-2xl">
-            Oaza to schronisko dla kotów, których nikt inny nie przyjmie. Terminalnie chore,
-            z FIV i FeLV, po wypadkach, w trakcie leczenia — tygodnie przed końcem.
-            Nie mierzymy życia tym, jak długo może trwać.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Link
-              href="/koty"
-              className="inline-flex items-center justify-center bg-oaza-rust text-white font-semibold px-8 py-4 rounded-full hover:opacity-90 transition-opacity"
-            >
-              Poznaj koty
-            </Link>
-            <Link
-              href="/wspieraj"
-              className="inline-flex items-center justify-center border-2 border-white text-white font-semibold px-8 py-4 rounded-full hover:bg-white hover:text-oaza-green transition-colors"
-            >
-              Pomóż sfinansować ich leczenie →
-            </Link>
+      <section className="bg-oaza-green text-white relative overflow-hidden min-h-[520px]">
+        {/* Cat image — desktop only, right side, fades into bg via gradient */}
+        <div className="hidden md:block absolute inset-y-0 right-0 w-[46%]">
+          <Image
+            src="https://static.pomagam.pl/media/project_photos/cache/GXTYZ5QBlsmN.jpg"
+            alt="Kot w Oazie szuka domu"
+            fill
+            className="object-cover object-center"
+            priority
+          />
+          {/* Gradient: left edge fades into green background — the "cutout" effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-oaza-green via-oaza-green/50 to-transparent" />
+        </div>
+
+        {/* Text content — left side */}
+        <div className="relative z-10 max-w-5xl mx-auto px-4 py-24 flex items-center min-h-[520px]">
+          <div className="w-full md:w-[55%]">
+            <p className="text-oaza-warm/70 text-xs font-semibold uppercase tracking-widest mb-5">
+              Warszawa · Przytulisko dla kotów
+            </p>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
+              Koty, których nikt inny nie chciał, żyją tutaj.
+            </h1>
+            <p className="text-green-100 text-lg leading-relaxed mb-10 max-w-xl">
+              Oaza to schronisko dla kotów, których nikt inny nie przyjmie. Terminalnie chore,
+              z FIV i FeLV, po wypadkach, w trakcie leczenia — tygodnie przed końcem.
+              Nie mierzymy życia tym, jak długo może trwać.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link
+                href="/koty"
+                className="inline-flex items-center justify-center bg-oaza-rust text-white font-semibold px-8 py-4 rounded-full hover:opacity-90 transition-opacity"
+              >
+                Poznaj koty
+              </Link>
+              <Link
+                href="/wspieraj"
+                className="inline-flex items-center justify-center border-2 border-white text-white font-semibold px-8 py-4 rounded-full hover:bg-white hover:text-oaza-green transition-colors"
+              >
+                Pomóż sfinansować ich leczenie →
+              </Link>
+            </div>
+            <p className="mt-8 text-green-200/70 text-sm">
+              Uratowane koty — włącznie z tymi z diagnozą, blizną lub odliczaniem.
+            </p>
           </div>
-          <p className="mt-8 text-green-200/70 text-sm">
-            Uratowane koty — włącznie z tymi z diagnozą, blizną lub odliczaniem.
-          </p>
         </div>
       </section>
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { getCat, updateCat } from '@/lib/api'
+import { TagPicker } from '@/components/CatTags'
 
 export default function EdytujKotaPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -16,6 +17,7 @@ export default function EdytujKotaPage({ params }: { params: { id: string } }) {
     photo_url: '',
     is_adopted: false,
   })
+  const [tags, setTags] = useState<string[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
@@ -35,6 +37,7 @@ export default function EdytujKotaPage({ params }: { params: { id: string } }) {
           photo_url: cat.photo_url ?? '',
           is_adopted: cat.is_adopted,
         })
+        setTags(cat.tags ?? [])
       })
       .catch(() => router.push('/admin/koty'))
       .finally(() => setFetching(false))
@@ -57,6 +60,7 @@ export default function EdytujKotaPage({ params }: { params: { id: string } }) {
           photo_url: form.photo_url || null,
           breed: form.breed || null,
           description: form.description || null,
+          tags,
         },
         token,
       )
@@ -103,6 +107,11 @@ export default function EdytujKotaPage({ params }: { params: { id: string } }) {
           <label className="block text-sm font-medium text-stone-700 mb-1">URL zdjęcia</label>
           <input type="url" className="input" value={form.photo_url} onChange={set('photo_url')} />
         </div>
+        <div>
+          <label className="block text-sm font-medium text-stone-700 mb-3">Etykiety</label>
+          <TagPicker selected={tags} onChange={setTags} />
+        </div>
+
         <div className="flex items-center gap-3">
           <input
             type="checkbox"

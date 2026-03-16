@@ -12,7 +12,7 @@ router = APIRouter()
 async def list_cats(pool: asyncpg.Pool = Depends(get_pool)):
     rows = await fetch_all(
         pool,
-        "SELECT id, name, age_years, breed, description, photo_url, is_adopted, created_at "
+        "SELECT id, name, age_years, breed, description, photo_url, is_adopted, tags, created_at "
         "FROM cats WHERE is_adopted = false ORDER BY created_at DESC",
     )
     return [dict(r) for r in rows]
@@ -22,7 +22,7 @@ async def list_cats(pool: asyncpg.Pool = Depends(get_pool)):
 async def get_cat(cat_id: int, pool: asyncpg.Pool = Depends(get_pool)):
     row = await fetch_one(
         pool,
-        "SELECT id, name, age_years, breed, description, photo_url, is_adopted, created_at "
+        "SELECT id, name, age_years, breed, description, photo_url, is_adopted, tags, created_at "
         "FROM cats WHERE id = $1",
         cat_id,
     )
@@ -36,11 +36,11 @@ async def get_cat(cat_id: int, pool: asyncpg.Pool = Depends(get_pool)):
 async def create_cat(payload: CatIn, pool: asyncpg.Pool = Depends(get_pool)):
     row = await fetch_one(
         pool,
-        "INSERT INTO cats (name, age_years, breed, description, photo_url) "
-        "VALUES ($1, $2, $3, $4, $5) "
-        "RETURNING id, name, age_years, breed, description, photo_url, is_adopted, created_at",
+        "INSERT INTO cats (name, age_years, breed, description, photo_url, tags) "
+        "VALUES ($1, $2, $3, $4, $5, $6) "
+        "RETURNING id, name, age_years, breed, description, photo_url, is_adopted, tags, created_at",
         payload.name, payload.age_years, payload.breed,
-        payload.description, payload.photo_url,
+        payload.description, payload.photo_url, payload.tags,
     )
     return dict(row)
 
@@ -62,7 +62,7 @@ async def patch_cat(
     row = await fetch_one(
         pool,
         f"UPDATE cats SET {set_clause} WHERE id = $1 "
-        "RETURNING id, name, age_years, breed, description, photo_url, is_adopted, created_at",
+        "RETURNING id, name, age_years, breed, description, photo_url, is_adopted, tags, created_at",
         cat_id, *values,
     )
     return dict(row)

@@ -8,6 +8,7 @@ class CatIn(BaseModel):
     breed: str | None = None
     description: str | None = None
     photo_url: str | None = None
+    tags: list[str] = []
 
 
 class CatPatch(BaseModel):
@@ -17,6 +18,7 @@ class CatPatch(BaseModel):
     description: str | None = None
     photo_url: str | None = None
     is_adopted: bool | None = None
+    tags: list[str] | None = None
 
 
 class CatOut(BaseModel):
@@ -27,4 +29,5 @@ class CatOut(BaseModel):
     description: str | None
     photo_url: str | None
     is_adopted: bool
+    tags: list[str]
     created_at: datetime
