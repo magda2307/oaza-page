@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react'
 const navLinks = [
   { href: '/koty',           label: 'Koty' },
   { href: '/jak-adoptowac',  label: 'Jak adoptować' },
+  { href: '/sukcesy',        label: 'Sukcesy' },
   { href: '/wspieraj',       label: 'Wspieraj' },
   { href: '/blog',           label: 'Blog' },
   { href: '/o-nas',          label: 'O nas' },

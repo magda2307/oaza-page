@@ -89,9 +89,6 @@ export default async function HomePage() {
                 Pomóż sfinansować ich leczenie →
               </Link>
             </div>
-            <p className="mt-8 text-green-200/70 text-sm">
-              Uratowane koty — włącznie z tymi z diagnozą, blizną lub odliczaniem.
-            </p>
           </div>
         </div>
       </section>

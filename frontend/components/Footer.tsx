@@ -6,6 +6,7 @@ const columns = [
     links: [
       { href: '/koty',          label: 'Przeglądaj koty' },
       { href: '/jak-adoptowac', label: 'Jak adoptować' },
+      { href: '/sukcesy',       label: 'Sukcesy' },
       { href: '/moje-podania',  label: 'Moje podania' },
     ],
   },
