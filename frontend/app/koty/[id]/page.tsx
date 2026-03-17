@@ -69,7 +69,7 @@ export default async function KotPage({ params }: Props) {
             {cat.age_years !== null && (
               <div className="flex gap-2">
                 <dt className="font-medium text-stone-800 w-20">Wiek</dt>
-                <dd>{cat.age_years} {cat.age_years === 1 ? 'rok' : 'lat'}</dd>
+                <dd>{cat.age_years} {cat.age_years === 1 ? 'rok' : cat.age_years <= 4 ? 'lata' : 'lat'}</dd>
               </div>
             )}
             <div className="flex gap-2">

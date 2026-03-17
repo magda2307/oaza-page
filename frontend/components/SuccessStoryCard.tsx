@@ -14,7 +14,7 @@ const STORY_TAG_META: Record<string, { label: string; className: string }> = {
   po_operacji:       { label: 'Po operacji',       className: 'bg-violet-100 text-violet-800' },
 }
 
-function DiagnosisChip({ tagKey }: { tagKey: string }) {
+export function DiagnosisChip({ tagKey }: { tagKey: string }) {
   const meta = STORY_TAG_META[tagKey]
   if (!meta) return null
   return (

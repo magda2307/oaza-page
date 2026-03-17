@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { getCats } from '@/lib/api'
 import type { Cat } from '@/types'
 import CatCarousel from '@/components/CatCarousel'
+import { CatTagsCompact } from '@/components/CatTags'
 
 export const metadata: Metadata = {
   title: 'Oaza — koty, których nikt inny nie przyjmie',
@@ -32,11 +33,14 @@ const adoptionSteps = [
 export default async function HomePage() {
   let featuredCats: Cat[] = []
   let carouselCats: Cat[] = []
+  let adoptedCats: Cat[] = []
   try {
     const all = await getCats()
     const available = all.filter((c) => !c.is_adopted)
+    const adopted = all.filter((c) => c.is_adopted)
     featuredCats = available.slice(0, 3)
     carouselCats = available
+    adoptedCats = adopted
   } catch {
     // API unavailable at build time — render page without live cats
   }
@@ -123,6 +127,9 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* ── Adopted cats carousel ─────────────────────────────────────────── */}
+      <CatCarousel cats={adoptedCats} heading="Znalazły dom" reverse />
+
       {/* ── Featured cats ─────────────────────────────────────────────────── */}
       <section className="bg-oaza-warm py-20">
         <div className="max-w-5xl mx-auto px-4">
@@ -138,7 +145,7 @@ export default async function HomePage() {
                 <div className="card bg-white overflow-hidden mb-8">
                   <div className="flex flex-col md:flex-row">
                     {/* Photo — 40% width on desktop */}
-                    <div className="relative w-full md:w-[40%] aspect-[4/3] md:aspect-auto md:min-h-[340px] bg-stone-100 flex-shrink-0">
+                    <div className="relative w-full md:w-[40%] aspect-[4/3] md:aspect-auto md:min-h-[340px] bg-stone-100 flex-shrink-0 overflow-hidden">
                       {spotlightCat.photo_url ? (
                         <Image
                           src={spotlightCat.photo_url}
@@ -152,6 +159,21 @@ export default async function HomePage() {
                           🐱
                         </div>
                       )}
+                      {/* Bottom gradient */}
+                      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
+                      {/* Age badge */}
+                      {spotlightCat.age_years !== null && (
+                        <span className="absolute top-4 right-4 bg-white/90 text-stone-600 text-xs font-semibold px-2.5 py-1 rounded-full backdrop-blur-sm">
+                          {spotlightCat.age_years}{' '}
+                          {spotlightCat.age_years === 1 ? 'rok' : spotlightCat.age_years <= 4 ? 'lata' : 'lat'}
+                        </span>
+                      )}
+                      {/* Tags overlay */}
+                      {spotlightCat.tags?.length > 0 && (
+                        <div className="absolute bottom-4 left-4">
+                          <CatTagsCompact tags={spotlightCat.tags} />
+                        </div>
+                      )}
                     </div>
                     {/* Story — 60% width on desktop */}
                     <div className="flex flex-col justify-center p-8 md:p-10 md:w-[60%]">
@@ -161,15 +183,9 @@ export default async function HomePage() {
                       <h3 className="text-3xl font-bold text-stone-900 mb-2">
                         {spotlightCat.name}
                       </h3>
-                      <div className="flex gap-3 text-sm text-stone-400 mb-4">
-                        {spotlightCat.breed && <span>{spotlightCat.breed}</span>}
-                        {spotlightCat.age_years !== null && (
-                          <span>
-                            {spotlightCat.age_years}{' '}
-                            {spotlightCat.age_years === 1 ? 'rok' : 'lat'}
-                          </span>
-                        )}
-                      </div>
+                      {spotlightCat.breed && (
+                        <p className="text-sm text-stone-400 mb-4">{spotlightCat.breed}</p>
+                      )}
                       {spotlightCat.description && (
                         <p className="text-stone-600 leading-relaxed mb-8 line-clamp-4">
                           {spotlightCat.description}
@@ -186,34 +202,43 @@ export default async function HomePage() {
                 </div>
               )}
 
-              {/* Remaining cats — 2-column grid */}
               {secondaryCats.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {secondaryCats.map((cat) => (
                     <Link key={cat.id} href={`/koty/${cat.id}`} className="card group bg-white">
-                      <div className="aspect-[4/3] relative bg-stone-100">
+                      <div className="aspect-[4/3] relative overflow-hidden bg-stone-100">
                         {cat.photo_url ? (
                           <Image
                             src={cat.photo_url}
                             alt={cat.name}
                             fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-5xl bg-oaza-green/10">
                             🐱
                           </div>
                         )}
+                        {/* Bottom gradient */}
+                        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
+                        {/* Age badge */}
+                        {cat.age_years !== null && (
+                          <span className="absolute top-3 right-3 bg-white/90 text-stone-600 text-xs font-semibold px-2.5 py-1 rounded-full backdrop-blur-sm">
+                            {cat.age_years}{' '}
+                            {cat.age_years === 1 ? 'rok' : cat.age_years <= 4 ? 'lata' : 'lat'}
+                          </span>
+                        )}
+                        {/* Tags overlay */}
+                        {cat.tags?.length > 0 && (
+                          <div className="absolute bottom-3 left-3">
+                            <CatTagsCompact tags={cat.tags} />
+                          </div>
+                        )}
                       </div>
                       <div className="p-5">
-                        <p className="font-semibold text-stone-900 text-lg">{cat.name}</p>
-                        <div className="mt-1 flex gap-3 text-sm text-stone-500">
-                          {cat.breed && <span>{cat.breed}</span>}
-                          {cat.age_years !== null && (
-                            <span>
-                              {cat.age_years} {cat.age_years === 1 ? 'rok' : 'lat'}
-                            </span>
-                          )}
+                        <div className="flex items-baseline justify-between">
+                          <p className="font-bold text-stone-900 text-lg">{cat.name}</p>
+                          {cat.breed && <span className="text-sm text-stone-400">{cat.breed}</span>}
                         </div>
                         {cat.description && (
                           <p className="mt-2 text-sm text-stone-600 line-clamp-2">

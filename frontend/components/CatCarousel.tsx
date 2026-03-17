@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import type { Cat } from '@/types'
+import { getTagLabel } from '@/components/CatTags'
 
 type CarouselItem = {
   key: string
@@ -31,7 +32,15 @@ function ageLabel(years: number): string {
   return 'lat'
 }
 
-export default function CatCarousel({ cats }: { cats: Cat[] }) {
+export default function CatCarousel({
+  cats,
+  heading = 'Czekają na nowy dom',
+  reverse = false,
+}: {
+  cats: Cat[]
+  heading?: string
+  reverse?: boolean
+}) {
   const source: CarouselItem[] =
     cats.length > 0
       ? cats.map((c) => ({
@@ -42,7 +51,9 @@ export default function CatCarousel({ cats }: { cats: Cat[] }) {
           tags: c.tags,
           href: `/koty/${c.id}`,
         }))
-      : STATIC_CATS
+      : reverse ? [] : STATIC_CATS
+
+  if (source.length === 0) return null
 
   // Duplicate so the strip loops seamlessly (translate -50% = exact one set width)
   const items = [...source, ...source]
@@ -57,21 +68,28 @@ export default function CatCarousel({ cats }: { cats: Cat[] }) {
         .cat-marquee {
           animation: marquee 36s linear infinite;
         }
-        .cat-marquee:hover {
+        .cat-marquee-reverse {
+          animation: marquee 36s linear infinite reverse;
+        }
+        .cat-marquee:hover,
+        .cat-marquee-reverse:hover {
           animation-play-state: paused;
         }
       `}</style>
 
-      <p className="text-center text-xs font-semibold uppercase tracking-widest text-oaza-rust/70 mb-10">
-        Czekają na nowy dom
-      </p>
+      <h2 className="text-center text-3xl font-bold text-stone-900 mb-10 px-4">
+        {heading}
+      </h2>
 
-      <div className="cat-marquee flex gap-6 px-6" style={{ width: 'max-content' }}>
+      <div
+        className={`${reverse ? 'cat-marquee-reverse' : 'cat-marquee'} flex gap-6 px-6`}
+        style={{ width: 'max-content' }}
+      >
         {items.map((cat, i) => (
           <Link
             key={`${cat.key}-${i}`}
             href={cat.href}
-            className="group flex-shrink-0 w-[190px]"
+            className="group flex-shrink-0 w-[210px]"
           >
             {/* Photo — tall rectangle */}
             <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-stone-100 shadow-md group-hover:shadow-xl transition-shadow duration-300">
@@ -90,28 +108,24 @@ export default function CatCarousel({ cats }: { cats: Cat[] }) {
               <div className="absolute inset-0 bg-oaza-rust/0 group-hover:bg-oaza-rust/10 transition-colors duration-300" />
             </div>
 
-            {/* Info below photo */}
-            <div className="mt-3 px-1">
-              <p className="font-bold text-[15px] text-stone-900 group-hover:text-oaza-rust transition-colors leading-tight">
+            {/* Info row: Name · age · tags all inline */}
+            <div className="mt-3 px-1 flex items-center flex-wrap gap-x-2 gap-y-1">
+              <span className="font-bold text-lg text-stone-900 group-hover:text-oaza-rust transition-colors leading-tight">
                 {cat.name}
-              </p>
+              </span>
               {cat.age_years != null && (
-                <p className="text-xs text-stone-400 mt-0.5">
+                <span className="text-sm text-stone-400 leading-tight">
                   {cat.age_years} {ageLabel(cat.age_years)}
-                </p>
+                </span>
               )}
-              {cat.tags && cat.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {cat.tags.slice(0, 2).map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-[10px] font-semibold bg-oaza-rust/10 text-oaza-rust px-1.5 py-0.5 rounded-full"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
+              {cat.tags && cat.tags.length > 0 && cat.tags.slice(0, 2).map((tag) => (
+                <span
+                  key={tag}
+                  className="text-[10px] font-semibold bg-oaza-rust/10 text-oaza-rust px-1.5 py-0.5 rounded-full"
+                >
+                  {getTagLabel(tag)}
+                </span>
+              ))}
             </div>
           </Link>
         ))}

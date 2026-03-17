@@ -3,35 +3,12 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { successStories, featuredStory } from '@/lib/successStories'
 import SuccessFilter from '@/components/SuccessFilter'
+import { DiagnosisChip } from '@/components/SuccessStoryCard'
 
 export const metadata: Metadata = {
   title: 'Sukcesy — koty, które znalazły dom',
   description:
     'Historie kotów z Oazy, które trafiły do nowych domów — mimo FIV, FeLV, wypadków, raka i trudnych diagnoz. Prawdziwe adopcje, prawdziwe rodziny.',
-}
-
-const STORY_TAG_META: Record<string, { label: string; className: string }> = {
-  fiv:               { label: 'FIV+',             className: 'bg-red-100 text-red-800' },
-  felv:              { label: 'FeLV+',             className: 'bg-red-100 text-red-800' },
-  nowotwor:          { label: 'Nowotwór',          className: 'bg-red-100 text-red-800' },
-  opieka_paliatywna: { label: 'Opieka paliatywna', className: 'bg-red-100 text-red-800' },
-  senior:            { label: 'Senior',            className: 'bg-violet-100 text-violet-800' },
-  trojnog:           { label: 'Trójnóg',           className: 'bg-violet-100 text-violet-800' },
-  po_wypadku:        { label: 'Po wypadku',        className: 'bg-violet-100 text-violet-800' },
-  wymaga_lekow:      { label: 'Wymaga leków',      className: 'bg-violet-100 text-violet-800' },
-  po_operacji:       { label: 'Po operacji',       className: 'bg-violet-100 text-violet-800' },
-}
-
-function DiagnosisChip({ tagKey }: { tagKey: string }) {
-  const meta = STORY_TAG_META[tagKey]
-  if (!meta) return null
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${meta.className}`}
-    >
-      {meta.label}
-    </span>
-  )
 }
 
 export default function SukcesyPage() {

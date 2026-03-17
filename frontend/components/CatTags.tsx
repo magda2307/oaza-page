@@ -58,6 +58,10 @@ const TAG_META: Record<string, TagMeta> = {
   w_leczeniu:           { label: 'W leczeniu',            className: 'bg-violet-100 text-violet-800' },
 }
 
+export function getTagLabel(key: string): string {
+  return TAG_META[key]?.label ?? key
+}
+
 // Ordered list of all available tags, grouped for the admin picker
 export const TAG_GROUPS: { heading: string; keys: string[] }[] = [
   {

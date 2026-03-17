@@ -92,7 +92,7 @@ function CatCard({ cat }: { cat: Cat }) {
         <div className="mt-1 flex gap-3 text-sm text-stone-500">
           {cat.breed && <span>{cat.breed}</span>}
           {cat.age_years !== null && (
-            <span>{cat.age_years} {cat.age_years === 1 ? 'rok' : 'lat'}</span>
+            <span>{cat.age_years} {cat.age_years === 1 ? 'rok' : cat.age_years <= 4 ? 'lata' : 'lat'}</span>
           )}
         </div>
         {cat.description && (
