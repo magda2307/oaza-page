@@ -101,6 +101,24 @@ async def set_primary_photo(
     return dict(row)
 
 
+class ReorderIn(BaseModel):
+    photo_ids: list[int]  # ordered list — index = new display_order
+
+
+@router.patch("/reorder", status_code=status.HTTP_204_NO_CONTENT,
+              dependencies=[Depends(require_admin)])
+async def reorder_cat_photos(
+    cat_id: int, payload: ReorderIn, pool: asyncpg.Pool = Depends(get_pool)
+):
+    async with pool.acquire() as conn:
+        async with conn.transaction():
+            for order, photo_id in enumerate(payload.photo_ids):
+                await conn.execute(
+                    "UPDATE cat_photos SET display_order = $1 WHERE id = $2 AND cat_id = $3",
+                    order, photo_id, cat_id,
+                )
+
+
 @router.delete("/{photo_id}", status_code=status.HTTP_204_NO_CONTENT,
                dependencies=[Depends(require_admin)])
 async def delete_cat_photo(
