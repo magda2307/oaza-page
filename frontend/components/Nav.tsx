@@ -9,6 +9,7 @@ const navLinks = [
   { href: '/sukcesy',        label: 'Sukcesy' },
   { href: '/jak-adoptowac',  label: 'Jak adoptować' },
   { href: '/wspieraj',       label: 'Wspieraj' },
+  { href: '/partnerzy',      label: 'Partnerzy' },
   { href: '/blog',           label: 'Blog' },
   { href: '/o-nas',          label: 'O nas' },
 ]

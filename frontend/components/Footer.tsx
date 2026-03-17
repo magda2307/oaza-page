@@ -15,8 +15,9 @@ const columns = [
   {
     heading: 'Wsparcie',
     links: [
-      { href: '/wspieraj', label: 'Wspieraj' },
-      { href: '/kontakt',  label: 'Kontakt' },
+      { href: '/wspieraj',   label: 'Wspieraj' },
+      { href: '/partnerzy',  label: 'Partnerzy' },
+      { href: '/kontakt',    label: 'Kontakt' },
     ],
   },
   {

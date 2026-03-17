@@ -1,12 +1,24 @@
+import uuid
+import time
+import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
 from app.config import settings
 from app.db.session import create_pool, close_pool, get_pool
 from app.models.errors import ErrorDetail, ErrorResponse
 from app.routers import auth, cats, applications, admin, photos, contact, stories, cat_photos, fundraisers, newsletter
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+)
+
+logger = logging.getLogger("oaza")
 
 
 @asynccontextmanager
@@ -50,6 +62,34 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
     max_age=600,
 )
+
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        return response
+
+
+class RequestIdMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        request_id = str(uuid.uuid4())
+        request.state.request_id = request_id
+        start = time.monotonic()
+        response = await call_next(request)
+        duration_ms = round((time.monotonic() - start) * 1000)
+        response.headers["X-Request-Id"] = request_id
+        logger.info(
+            "%s %s %s %dms rid=%s",
+            request.method, request.url.path, response.status_code, duration_ms, request_id,
+        )
+        return response
+
+
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RequestIdMiddleware)
 
 
 _ERROR_MAP = {

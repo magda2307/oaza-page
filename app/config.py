@@ -17,6 +17,13 @@ class Settings(BaseSettings):
 
     podatek_redirect_url: str = "https://podatki.gov.pl"
 
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    email_from: str = "noreply@kocia-oaza.pl"
+    smtp_tls: bool = True
+
     model_config = SettingsConfigDict(env_file=".env")
 
 
