@@ -31,6 +31,14 @@ export interface AdminApplication extends Application {
   user_email: string
 }
 
+export interface Page<T> {
+  items: T[]
+  total: number
+  page: number
+  pages: number
+  limit: number
+}
+
 export interface TokenResponse {
   access_token: string
   token_type: string

@@ -1,5 +1,3 @@
-// TODO backend: add pagination support
-
 import type { Metadata } from 'next'
 import { getCats } from '@/lib/api'
 import type { Cat } from '@/types'
@@ -12,17 +10,17 @@ export const metadata: Metadata = {
 }
 
 export default async function KotyPage() {
-  let cats: Cat[] = []
+  let available: Cat[] = []
   let error = false
 
   try {
-    cats = await getCats()
+    const page = await getCats()
+    available = page.items
   } catch {
     error = true
   }
 
-  const available = cats.filter((c) => !c.is_adopted)
-  const adopted = cats.filter((c) => c.is_adopted)
+  const adopted: Cat[] = []
 
   return (
     <div className="bg-oaza-warm min-h-screen">

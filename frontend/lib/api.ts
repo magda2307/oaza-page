@@ -1,4 +1,4 @@
-import type { Cat, User, Application, AdminApplication, TokenResponse } from '@/types'
+import type { Cat, Page, User, Application, AdminApplication, TokenResponse } from '@/types'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
 
@@ -24,7 +24,7 @@ async function apiFetch<T>(
 }
 
 // --- Cats ---
-export const getCats = () => apiFetch<Cat[]>('/cats')
+export const getCats = (params?: string) => apiFetch<Page<Cat>>(`/cats${params ? `?${params}` : ''}`)
 export const getCat = (id: number) => apiFetch<Cat>(`/cats/${id}`)
 
 // --- Auth ---
