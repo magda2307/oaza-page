@@ -1168,3 +1168,247 @@ For each page, verify before shipping:
 - [ ] Photo aspect ratios stay correct (no squishing)
 - [ ] All form inputs are at least 16px font size (prevents iOS zoom)
 - [ ] No horizontal overflow anywhere (test with devtools)
+
+---
+
+## 15. Anti-AI-Generic Design Audit
+
+> Cross-referenced against `.impeccable.md`. These rules have equal weight to sections 1–14. The test for every decision: *does this give the photo room to speak, and does it look like a form with a database behind it?*
+
+---
+
+### 15.1 Five Highest-Impact Changes (Do These First)
+
+1. **Remove `group-hover:scale-105` from every photo.** The zoom-on-hover is the single most recognizable AI-template behaviour. Remove from `CatFilterBar.tsx`, `CatCarousel.tsx`, `page.tsx`. Replace with: `group-hover:brightness-[1.04] transition-[filter] duration-700`.
+
+2. **Cat profile photo: full-bleed, zero border radius.** The contained `rounded-2xl aspect-[16/9]` photo inside `max-w-5xl px-4` looks like a database record. Replace with a photo that bleeds to the left viewport edge, `rounded-none`, with the text panel floating right.
+
+3. **Delete the `.card` CSS utility class from `globals.css`.** Every card shares one class → every section looks identical. Write inline Tailwind per card type. Grid card, spotlight card, sidebar panel, and donation callout must each have distinct visual language.
+
+4. **Hero h1 is undersized.** Current `text-2xl sm:text-3xl` is the same size as a section subheading. Must be `text-4xl sm:text-5xl lg:text-6xl xl:text-7xl` minimum. Editorial design depends on brutal size contrast.
+
+5. **`text-oaza-rust` eyebrow labels: one per page maximum.** The `text-xs font-semibold uppercase tracking-widest text-oaza-rust` appearing before every section heading is the most repeated AI-generic pattern in the codebase. One section per page earns it. All others: no eyebrow, or `text-stone-400` instead.
+
+---
+
+### 15.2 Layout Asymmetry
+
+Never use 50/50 column splits. Editorial layouts use tension:
+
+| Split | Tailwind | Use |
+|---|---|---|
+| 7:5 | `grid-cols-[minmax(0,7fr)_minmax(0,5fr)]` | Hero, cat profile |
+| 3:5 | `grid-cols-[minmax(0,3fr)_minmax(0,5fr)]` | Text-heavy info sections |
+| 5:3 | `grid-cols-[minmax(0,5fr)_minmax(0,3fr)]` | Photo-led sections |
+| Full bleed + float | photo `lg:-mr-[calc(50vw-50%)]` | Spotlight moments |
+
+**Break the grid intentionally:**
+- Hero cat photo bleeds to the right edge at `lg+` via negative margin
+- Pull quote in blog: `lg:-ml-12` to jut into the left margin
+- Stats: left stat at `text-9xl` dwarfs right stat at `text-5xl` — intentional imbalance is the point
+
+**Dead space is structural.** A section with one large quote and 30% empty width is not wasted — it is the design.
+
+---
+
+### 15.3 Typography Contrast
+
+**Size contrast is the editorial tool:**
+- Stats: `text-8xl font-black` number + `text-sm` label. Never `text-2xl` + `text-base`.
+- Drop cap on blog opening paragraph:
+  `first-letter:float-left first-letter:font-display first-letter:font-black first-letter:text-7xl first-letter:leading-none first-letter:mr-2 first-letter:text-oaza-green`
+
+**Italics are rare and powerful:**
+- `font-display italic` ONLY for: pull quotes, cat names in body copy, specific emotional emphasis
+- Never on UI labels, badges, or navigation
+
+**AI tells to avoid:**
+- Every `<section>` with the identical `eyebrow → H2 → p.subheadline → content` hierarchy
+- `text-stone-600` at the same weight and size for every paragraph (invisible hierarchy)
+- `font-semibold` as the only emphasis tool instead of size or spacing contrast
+
+**Playfair Display sizing:**
+- At `text-5xl+`: apply `tracking-tight` or `tracking-[-0.02em]`
+- Never `tracking-wide` with Playfair — it destroys the serif economy
+
+---
+
+### 15.4 Photo Integration
+
+**Photo IS the layout, not a slot in the layout.**
+
+Full-bleed escape: `w-screen relative left-1/2 -translate-x-1/2`
+
+**Aspect ratios by context:**
+
+| Context | Ratio | Reason |
+|---|---|---|
+| Profile hero | `aspect-[3/4]` | Portrait — intimate, editorial |
+| Grid card | `aspect-[4/3]` | Standard |
+| Spotlight card | `aspect-[16/9]` | Cinematic feature |
+| Blog hero | `aspect-[2/1]` | Wide editorial |
+| Thumbnail | `aspect-square` 64×64 | Compact list |
+
+**Never put captions inside cards.** Captions go below the photo, outside its container: `text-xs text-stone-400 mt-2 pl-1`.
+
+**Photo overlay gradient:** `from-black/50 via-black/20 to-transparent` — current `from-black/30` is too light for legible overlaid text.
+
+---
+
+### 15.5 Micro-details That Signal Handcrafted
+
+**Borders:**
+- `border-stone-200/60` (opacity variant) not `border-stone-200` solid — more delicate
+- `divide-y divide-stone-100` for list-style sections instead of card grids
+- Blockquote: `border-l-[3px] border-oaza-green/40 pl-6`
+
+**Subtle background variation:**
+- Alternate `bg-[#F4E8D1]` and `bg-[#F0E4CA]` (slightly darker) within warm sections to create hierarchy
+- Use `bg-[#FAF9F7]` (barely warm white) instead of pure `bg-white` for body sections
+
+**Letter-spacing rules:**
+- `tracking-[-0.02em]` on large Playfair headings
+- `tracking-widest` ONLY on all-caps labels of max 3 words
+- Never `tracking-wide` in body copy
+
+**Use `divide-y` instead of cards for:** FAQ, diagnosis lists, step lists, `/moje-podania` application list
+
+---
+
+### 15.6 Motion That Feels Human
+
+**Stop doing:**
+- `hover:-translate-y-1 hover:shadow-sm` — float-up card hover. Remove everywhere.
+- `hover:shadow-md transition-shadow` on `.card` — remove
+- `scale-[1.02]` on hover — too subtle to read, too present to ignore
+- 4+ staggered `animate-fade-in-up` on hero load — portfolio demo pattern. One only: the `h1`.
+- `animate-bounce` anywhere
+
+**Do instead:**
+- Photo hover: `group-hover:brightness-[1.04] transition-[filter] duration-700`
+- Link underline: `decoration-oaza-rust/0 hover:decoration-oaza-rust/100 transition-[text-decoration-color] duration-300 underline underline-offset-4`
+- Primary CTA: `hover:tracking-wide transition-[letter-spacing] duration-300` — text breathes out on hover (one CTA per page only)
+- `RevealOnScroll` on section headings and pull quotes ONLY. Cards appear immediately.
+
+**One parallax allowed:** Homepage hero photo at 0.3× scroll speed. Nowhere else.
+
+---
+
+### 15.7 Color Restraint
+
+**Oaza-rust: one prominent use per page.**
+
+| Page | Where rust lives |
+|---|---|
+| Homepage | Final donate CTA strip (background) |
+| `/koty` | Active filter pill only |
+| `/koty/[id]` | Primary adopt button only |
+| `/wspieraj` | Opening headline accent word |
+| `/jak-adoptowac` | Step number accents |
+| `/blog/[slug]` | Category chip on hero photo |
+
+**Rules:**
+- Most of the site is stone + cream + white. Color is punctuation, not wallpaper.
+- `text-oaza-green` on `bg-oaza-warm`: use `text-stone-800` for body text — contrast is insufficient
+- `bg-oaza-rust` on buttons: only the single primary CTA per page. All others: outlined (`border-2 border-oaza-green`) or text links.
+- A page that uses `bg-oaza-green` once is more powerful than one that uses it three times.
+
+---
+
+### 15.8 Sections That Break the Template
+
+**"Just a quote" section** (once — homepage or `/o-nas`):
+```
+bg-oaza-warm py-24
+max-w-3xl mx-auto px-8
+Ornamental mark: font-display text-[120px] leading-none text-oaza-green/15 select-none
+Body: font-display italic text-3xl lg:text-4xl text-stone-900 leading-snug
+Attribution: mt-8 text-sm text-stone-400 not-italic
+```
+No eyebrow. No heading. No CTA. Nothing else in the section.
+
+**"One stat" anchor section** (once — `/wspieraj`):
+```
+bg-white py-32 text-center
+Number: font-display font-black text-[120px] lg:text-[180px] leading-none text-oaza-green
+Label: text-base text-stone-500 mt-4 max-w-xs mx-auto
+```
+One number. One sentence. That is the section.
+
+**Diagnosis list** (replaces icon grid on homepage):
+```
+divide-y divide-stone-100
+Each row: flex items-baseline gap-6 py-5
+  Left col: font-display italic text-2xl text-stone-900 w-32 shrink-0
+  Right col: text-stone-600 text-base leading-relaxed
+Column label (rotated): text-xs uppercase tracking-widest text-stone-300 [writing-mode:vertical-rl] rotate-180
+```
+No card backgrounds, no hover effects, no icons.
+
+---
+
+### 15.9 The Specific > Generic Principle
+
+Every text element must be specific to Oaza — not substitutable into any other website.
+
+**CTAs:**
+
+| Generic (AI) | Specific (Oaza) |
+|---|---|
+| "Wesprzyj teraz" | "Wesprzyj opiekę Mieczysława" |
+| "Dowiedz się więcej" | "Jak wygląda pierwsza wizyta?" |
+| "Adoptuj" | "Chcę wziąć Dragnę do domu" |
+| "Poznaj naszą misję" | "Skąd się wzięła Oaza" |
+
+**Stats:**
+
+| Generic | Specific |
+|---|---|
+| "340+ adoptions" | "340 kotów znalazło dom — ostatni 3 dni temu" |
+| "4 years of experience" | "Od 2022 roku. Zaczęło się od jednego kota z FIV." |
+
+**Empty states in brand voice:**
+- No cats: "Żaden kot nie spełnia tych kryteriów — może rozszerzyć wyszukiwanie?"
+- No applications: "Nie złożyłeś jeszcze podania. Może któryś z kotów Cię zainteresuje?"
+- Never: "No results found", "You have no applications"
+
+**Error messages — Polish, specific, never apologetic:**
+- Required field: "To pole jest wymagane"
+- Invalid email: "Sprawdź adres email"
+- Server error: "Coś poszło nie tak — spróbuj ponownie lub napisz do nas"
+
+---
+
+### 15.10 Hard Delete List
+
+Remove these with no replacement:
+
+**Hover effects:**
+- `group-hover:scale-105 transition-transform duration-500` on all images → brightness instead
+- `hover:shadow-md transition-shadow` on `.card` in `globals.css`
+- `hover:-translate-y-1 hover:shadow-sm` from any card
+- `group-hover:scale-110` on icons in the trust strip
+
+**Section patterns to simplify:**
+- Trust strip: four icon-circle containers → replace with `divide-x` text-only row or remove section
+- SVG icons above step numerals in adoption steps → remove icons, oversized numerals carry the structure
+- Cat emoji placeholder for missing photos → `bg-stone-100` plain, no emoji
+
+**Component patterns to flatten:**
+- `.card` utility class → DELETE from `globals.css`. Write per-context inline styles.
+- Four staggered `animate-fade-in-up` on hero → keep only `h1`, everything else immediate
+- `bg-oaza-green/10` placeholder with emoji → `bg-stone-100`, no emoji, cat name in `text-stone-400`
+
+---
+
+### 15.11 Page-Specific Anti-Generic Calls
+
+**Homepage:** Replace the 2-column diagnosis icon grid with a `divide-y` list. Diagnosis name in `font-display italic` as left column, one honest sentence as right column. No cards, no icons, no hover.
+
+**Cat Profile:** Remove the "Charakterystyka" database-field label. Tags become a footnote (`text-xs text-stone-400`, no heading). Breed and age go inline below the cat name — "Dragon, 5 lat, dachowiec" in `text-stone-500 text-base mt-1`. Sidebar contains only: adopt CTA + contact link.
+
+**Donate (`/wspieraj`):** Remove the four amount cards formatted like a pricing grid. Replace with prose sentences naming each amount. Open the page with a full-bleed photo and cat's name in large overlay type before any heading.
+
+**Cat Listings (`/koty`):** Spotlight card uses `rounded-none` (photo bleeds to edges). Grid cards use `rounded-xl`. Every 3rd card uses `aspect-video` instead of `aspect-[3/4]` to break rhythm: `{i % 3 === 0 ? 'aspect-video' : 'aspect-[3/4]'}`.
+
+**Blog Post (`/blog/[slug]`):** Hero photo full-bleed, zero border radius, no container. Body column `max-w-[62ch]` not `max-w-2xl`. Pull quotes are part of text flow with left-border accent — not callout cards. Drop cap on opening paragraph.
