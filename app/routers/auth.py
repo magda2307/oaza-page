@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.db.queries import fetch_one, execute
 from app.db.session import get_pool
-from app.models.auth import UserRegister, UserLogin, Token
+from app.models.auth import UserRegister, UserLogin, Token, TokenData
 from app.services.auth import hash_password, verify_password, create_access_token
+from app.dependencies import get_current_user
 import asyncpg
 
 router = APIRouter()
@@ -43,3 +44,8 @@ async def login(payload: UserLogin, pool: asyncpg.Pool = Depends(get_pool)):
         )
     token = create_access_token(row["id"], row["is_admin"])
     return Token(access_token=token)
+
+
+@router.get("/me")
+async def me(current_user: TokenData = Depends(get_current_user)):
+    return {"id": current_user.user_id, "is_admin": current_user.is_admin}

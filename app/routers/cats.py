@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from app.db.queries import fetch_one, fetch_all, execute
 from app.db.session import get_pool
 from app.models.cat import CatIn, CatOut, CatPatch
@@ -8,13 +8,68 @@ import asyncpg
 router = APIRouter()
 
 
-@router.get("/", response_model=list[CatOut])
-async def list_cats(pool: asyncpg.Pool = Depends(get_pool)):
+@router.get("/tags")
+async def list_tags(pool: asyncpg.Pool = Depends(get_pool)):
     rows = await fetch_all(
         pool,
-        "SELECT id, name, age_years, breed, description, photo_url, is_adopted, tags, created_at "
-        "FROM cats WHERE is_adopted = false ORDER BY created_at DESC",
+        "SELECT unnest(tags) as tag, count(*) as cnt FROM cats WHERE NOT is_adopted GROUP BY 1 ORDER BY 2 DESC",
     )
+    return [{"tag": r["tag"], "count": r["cnt"]} for r in rows]
+
+
+@router.get("/stats")
+async def stats(pool: asyncpg.Pool = Depends(get_pool)):
+    row = await fetch_one(
+        pool,
+        "SELECT COUNT(*) FILTER (WHERE NOT is_adopted) as cats_available, "
+        "COUNT(*) FILTER (WHERE is_adopted) as cats_adopted FROM cats",
+    )
+    return {"cats_available": row["cats_available"], "cats_adopted": row["cats_adopted"]}
+
+
+@router.get("/", response_model=list[CatOut])
+async def list_cats(
+    pool: asyncpg.Pool = Depends(get_pool),
+    tags: list[str] = Query(default=[]),
+    sex: str | None = None,
+    age_min: float | None = None,
+    age_max: float | None = None,
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=20, ge=1, le=100),
+):
+    offset = (page - 1) * limit
+    conditions = ["is_adopted = false"]
+    params: list = []
+    param_idx = 1
+
+    for tag in tags:
+        conditions.append(f"${param_idx} = ANY(tags)")
+        params.append(tag)
+        param_idx += 1
+
+    if sex is not None:
+        conditions.append(f"sex = ${param_idx}")
+        params.append(sex)
+        param_idx += 1
+
+    if age_min is not None:
+        conditions.append(f"age_years >= ${param_idx}")
+        params.append(age_min)
+        param_idx += 1
+
+    if age_max is not None:
+        conditions.append(f"age_years <= ${param_idx}")
+        params.append(age_max)
+        param_idx += 1
+
+    where = " AND ".join(conditions)
+    params.append(limit)
+    params.append(offset)
+    query = (
+        f"SELECT id, name, age_years, sex, breed, description, photo_url, is_adopted, tags, created_at "
+        f"FROM cats WHERE {where} ORDER BY created_at DESC LIMIT ${param_idx} OFFSET ${param_idx + 1}"
+    )
+    rows = await fetch_all(pool, query, *params)
     return [dict(r) for r in rows]
 
 
@@ -22,7 +77,7 @@ async def list_cats(pool: asyncpg.Pool = Depends(get_pool)):
 async def get_cat(cat_id: int, pool: asyncpg.Pool = Depends(get_pool)):
     row = await fetch_one(
         pool,
-        "SELECT id, name, age_years, breed, description, photo_url, is_adopted, tags, created_at "
+        "SELECT id, name, age_years, sex, breed, description, photo_url, is_adopted, tags, created_at "
         "FROM cats WHERE id = $1",
         cat_id,
     )
@@ -36,10 +91,10 @@ async def get_cat(cat_id: int, pool: asyncpg.Pool = Depends(get_pool)):
 async def create_cat(payload: CatIn, pool: asyncpg.Pool = Depends(get_pool)):
     row = await fetch_one(
         pool,
-        "INSERT INTO cats (name, age_years, breed, description, photo_url, tags) "
-        "VALUES ($1, $2, $3, $4, $5, $6) "
-        "RETURNING id, name, age_years, breed, description, photo_url, is_adopted, tags, created_at",
-        payload.name, payload.age_years, payload.breed,
+        "INSERT INTO cats (name, age_years, sex, breed, description, photo_url, tags) "
+        "VALUES ($1, $2, $3, $4, $5, $6, $7) "
+        "RETURNING id, name, age_years, sex, breed, description, photo_url, is_adopted, tags, created_at",
+        payload.name, payload.age_years, payload.sex, payload.breed,
         payload.description, payload.photo_url, payload.tags,
     )
     return dict(row)
@@ -62,7 +117,7 @@ async def patch_cat(
     row = await fetch_one(
         pool,
         f"UPDATE cats SET {set_clause} WHERE id = $1 "
-        "RETURNING id, name, age_years, breed, description, photo_url, is_adopted, tags, created_at",
+        "RETURNING id, name, age_years, sex, breed, description, photo_url, is_adopted, tags, created_at",
         cat_id, *values,
     )
     return dict(row)

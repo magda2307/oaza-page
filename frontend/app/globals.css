@@ -13,6 +13,80 @@ body {
   font-family: system-ui, -apple-system, sans-serif;
 }
 
+/* ── Animation keyframes ──────────────────────────────────────────────────── */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes floatY {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-16px); }
+}
+
+@keyframes blobDrift {
+  0%, 100% { transform: scale(1)   translate(0px,   0px); }
+  33%       { transform: scale(1.08) translate(-14px, -10px); }
+  66%       { transform: scale(0.96) translate(10px,   8px); }
+}
+
+@keyframes drawLine {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+
+@keyframes pulseRing {
+  0%   { transform: scale(1);    opacity: 0.7; }
+  70%  { transform: scale(1.6);  opacity: 0; }
+  100% { transform: scale(1.6);  opacity: 0; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+/* ── Utility classes ──────────────────────────────────────────────────────── */
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.7s ease both;
+}
+
+.animate-float {
+  animation: floatY 7s ease-in-out infinite;
+}
+
+.animate-blob {
+  animation: blobDrift 14s ease-in-out infinite;
+}
+
+.animate-pulse-ring::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  border: 2px solid rgba(196, 68, 14, 0.5);
+  animation: pulseRing 2.2s ease-out infinite;
+}
+
+/* scrollbar-none utility */
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 @layer components {
   /* Primary CTA — oaza-rust */
   .btn-primary {

@@ -19,3 +19,6 @@ class ApplicationOut(BaseModel):
     message: str | None
     status: str
     created_at: datetime
+    cat_name: str | None = None
+    cat_photo_url: str | None = None
+    user_email: str | None = None
