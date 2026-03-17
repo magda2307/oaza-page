@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from app.db.queries import fetch_one, fetch_all, execute
 from app.db.session import get_pool
 from app.models.cat import CatIn, CatOut, CatPatch, CatDetailOut
+from app.models.pagination import Page
 from app.models.tags import TAG_VOCABULARY
 from app.dependencies import require_admin
 import asyncpg
@@ -38,21 +39,32 @@ async def list_tags(pool: asyncpg.Pool = Depends(get_pool)):
 
 @router.get("/stats")
 async def stats(pool: asyncpg.Pool = Depends(get_pool)):
-    row = await fetch_one(
-        pool,
-        "SELECT COUNT(*) FILTER (WHERE NOT is_adopted) as cats_available, "
-        "COUNT(*) FILTER (WHERE is_adopted) as cats_adopted FROM cats",
+    cats_row, stories_row = await asyncio.gather(
+        fetch_one(
+            pool,
+            "SELECT COUNT(*) FILTER (WHERE NOT is_adopted) as cats_available, "
+            "COUNT(*) FILTER (WHERE is_adopted) as cats_adopted FROM cats",
+        ),
+        fetch_one(
+            pool,
+            "SELECT COUNT(*) as success_stories FROM success_stories WHERE is_published = true",
+        ),
     )
-    return {"cats_available": row["cats_available"], "cats_adopted": row["cats_adopted"]}
+    return {
+        "cats_available": cats_row["cats_available"],
+        "cats_adopted": cats_row["cats_adopted"],
+        "success_stories": stories_row["success_stories"],
+    }
 
 
-@router.get("/", response_model=list[CatOut])
+@router.get("/", response_model=Page[CatOut])
 async def list_cats(
     pool: asyncpg.Pool = Depends(get_pool),
     tags: list[str] = Query(default=[]),
     sex: str | None = None,
     age_min: float | None = None,
     age_max: float | None = None,
+    q: str | None = None,
     page: int = Query(default=1, ge=1),
     limit: int = Query(default=20, ge=1, le=100),
 ):
@@ -81,15 +93,28 @@ async def list_cats(
         params.append(age_max)
         param_idx += 1
 
+    if q is not None:
+        conditions.append(
+            f"(name ILIKE ${param_idx} OR breed ILIKE ${param_idx} OR description ILIKE ${param_idx})"
+        )
+        params.append(f"%{q}%")
+        param_idx += 1
+
     where = " AND ".join(conditions)
+    filter_params = list(params)
     params.append(limit)
     params.append(offset)
     query = (
         f"SELECT id, name, age_years, sex, breed, description, photo_url, is_adopted, tags, created_at "
         f"FROM cats WHERE {where} ORDER BY created_at DESC LIMIT ${param_idx} OFFSET ${param_idx + 1}"
     )
-    rows = await fetch_all(pool, query, *params)
-    return [dict(r) for r in rows]
+    count_query = f"SELECT COUNT(*) as total FROM cats WHERE {where}"
+
+    rows, count_row = await asyncio.gather(
+        fetch_all(pool, query, *params),
+        fetch_one(pool, count_query, *filter_params),
+    )
+    return Page.build([dict(r) for r in rows], count_row["total"], page, limit)
 
 
 @router.get("/{cat_id}", response_model=CatDetailOut)
@@ -124,6 +149,39 @@ async def get_cat(cat_id: int, pool: asyncpg.Pool = Depends(get_pool)):
     result["photos"] = [dict(p) for p in photos_rows]
     result["fundraiser"] = dict(fundraiser_row) if fundraiser_row else None
     return result
+
+
+@router.get("/{cat_id}/related", response_model=list[CatOut])
+async def related_cats(
+    cat_id: int,
+    pool: asyncpg.Pool = Depends(get_pool),
+    limit: int = Query(default=4, ge=1, le=12),
+):
+    cat = await fetch_one(pool, "SELECT tags FROM cats WHERE id = $1", cat_id)
+    if not cat:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cat not found")
+
+    tags = cat["tags"]
+    if not tags:
+        rows = await fetch_all(
+            pool,
+            "SELECT id, name, age_years, sex, breed, description, photo_url, is_adopted, tags, created_at "
+            "FROM cats WHERE is_adopted = false AND id != $1 ORDER BY created_at DESC LIMIT $2",
+            cat_id, limit,
+        )
+        return [dict(r) for r in rows]
+
+    rows = await fetch_all(
+        pool,
+        "SELECT id, name, age_years, sex, breed, description, photo_url, is_adopted, tags, created_at, "
+        "  (SELECT COUNT(*) FROM unnest(tags) t WHERE t = ANY($2::text[])) AS shared "
+        "FROM cats "
+        "WHERE is_adopted = false AND id != $1 "
+        "ORDER BY shared DESC, created_at DESC "
+        "LIMIT $3",
+        cat_id, tags, limit,
+    )
+    return [dict(r) for r in rows]
 
 
 @router.post("/", response_model=CatOut, status_code=status.HTTP_201_CREATED,

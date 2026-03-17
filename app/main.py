@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from app.config import settings
 from app.db.session import create_pool, close_pool, get_pool
 from app.models.errors import ErrorDetail, ErrorResponse
-from app.routers import auth, cats, applications, admin, photos, contact, stories, cat_photos, fundraisers
+from app.routers import auth, cats, applications, admin, photos, contact, stories, cat_photos, fundraisers, newsletter
 
 
 @asynccontextmanager
@@ -27,6 +27,7 @@ tags_metadata = [
     {"name": "stories", "description": "Adoption success stories."},
     {"name": "cat-photos", "description": "Cat photo gallery management."},
     {"name": "fundraisers", "description": "Per-cat fundraiser tracking."},
+    {"name": "newsletter", "description": "Newsletter subscription management."},
 ]
 
 app = FastAPI(
@@ -99,6 +100,7 @@ app.include_router(contact.router, prefix="/contact", tags=["contact"])
 app.include_router(stories.router, prefix="/stories", tags=["stories"])
 app.include_router(cat_photos.router, prefix="/cats/{cat_id}/photos", tags=["cat-photos"])
 app.include_router(fundraisers.router, prefix="/fundraisers", tags=["fundraisers"])
+app.include_router(newsletter.router, prefix="/newsletter", tags=["newsletter"])
 
 
 @app.get("/podatek", tags=["misc"], include_in_schema=False)

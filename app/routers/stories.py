@@ -1,8 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+import uuid as _uuid
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, status
 from app.db.queries import fetch_one, fetch_all, execute
 from app.db.session import get_pool
 from app.models.story import StoryIn, StoryOut, StoryPatch
 from app.dependencies import require_admin
+from app.services.storage import upload_file
+from app.config import settings
 import asyncpg
 
 router = APIRouter()
@@ -11,6 +14,74 @@ _SELECT = (
     "SELECT id, cat_name, adopter_name, title, story, photo_url, "
     "is_published, published_at, created_at FROM success_stories"
 )
+
+_STORY_ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp"}
+_STORY_MAX_SIZE = 10 * 1024 * 1024
+
+
+@router.get("/admin", response_model=list[StoryOut],
+            dependencies=[Depends(require_admin)])
+async def list_all_stories(
+    pool: asyncpg.Pool = Depends(get_pool),
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=20, ge=1, le=50),
+    is_published: bool | None = None,
+):
+    offset = (page - 1) * limit
+    if is_published is None:
+        rows = await fetch_all(
+            pool,
+            f"{_SELECT} ORDER BY created_at DESC LIMIT $1 OFFSET $2",
+            limit, offset,
+        )
+    else:
+        rows = await fetch_all(
+            pool,
+            f"{_SELECT} WHERE is_published = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3",
+            is_published, limit, offset,
+        )
+    return [dict(r) for r in rows]
+
+
+@router.get("/admin/{story_id}", response_model=StoryOut,
+            dependencies=[Depends(require_admin)])
+async def get_story_admin(story_id: int, pool: asyncpg.Pool = Depends(get_pool)):
+    row = await fetch_one(pool, f"{_SELECT} WHERE id = $1", story_id)
+    if not row:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Story not found")
+    return dict(row)
+
+
+@router.post("/{story_id}/photo", response_model=StoryOut,
+             dependencies=[Depends(require_admin)])
+async def upload_story_photo(
+    story_id: int,
+    file: UploadFile = File(...),
+    pool: asyncpg.Pool = Depends(get_pool),
+):
+    story = await fetch_one(pool, "SELECT id FROM success_stories WHERE id = $1", story_id)
+    if not story:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Story not found")
+    if file.content_type not in _STORY_ALLOWED_TYPES:
+        raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+                            detail=f"Unsupported file type: {file.content_type}")
+    contents = await file.read()
+    if len(contents) > _STORY_MAX_SIZE:
+        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                            detail="File exceeds 10 MB limit")
+    if not settings.r2_account_id:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                            detail="Storage is not configured")
+    ext = file.filename.rsplit(".", 1)[-1] if file.filename and "." in file.filename else "jpg"
+    r2_key = f"stories/{story_id}/{_uuid.uuid4()}.{ext}"
+    url = upload_file(contents, r2_key, file.content_type)
+    row = await fetch_one(
+        pool,
+        "UPDATE success_stories SET photo_url = $1 WHERE id = $2 "
+        "RETURNING id, cat_name, adopter_name, title, story, photo_url, is_published, published_at, created_at",
+        url, story_id,
+    )
+    return dict(row)
 
 
 @router.get("/", response_model=list[StoryOut])
