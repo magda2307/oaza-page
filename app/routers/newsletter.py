@@ -57,17 +57,23 @@ async def list_subscribers(
 ):
     offset = (page - 1) * limit
     if active_only:
-        rows = await fetch_all(
-            pool,
-            "SELECT id, email, name, is_active, created_at FROM newsletter_subscribers "
-            "WHERE is_active = true ORDER BY created_at DESC LIMIT $1 OFFSET $2",
-            limit, offset,
+        rows, count_row = await asyncio.gather(
+            fetch_all(
+                pool,
+                "SELECT id, email, name, is_active, created_at FROM newsletter_subscribers "
+                "WHERE is_active = true ORDER BY created_at DESC LIMIT $1 OFFSET $2",
+                limit, offset,
+            ),
+            fetch_one(pool, "SELECT COUNT(*) as total FROM newsletter_subscribers WHERE is_active = true"),
         )
     else:
-        rows = await fetch_all(
-            pool,
-            "SELECT id, email, name, is_active, created_at FROM newsletter_subscribers "
-            "ORDER BY created_at DESC LIMIT $1 OFFSET $2",
-            limit, offset,
+        rows, count_row = await asyncio.gather(
+            fetch_all(
+                pool,
+                "SELECT id, email, name, is_active, created_at FROM newsletter_subscribers "
+                "ORDER BY created_at DESC LIMIT $1 OFFSET $2",
+                limit, offset,
+            ),
+            fetch_one(pool, "SELECT COUNT(*) as total FROM newsletter_subscribers"),
         )
-    return [dict(r) for r in rows]
+    return Page.build([dict(r) for r in rows], count_row["total"], page, limit)

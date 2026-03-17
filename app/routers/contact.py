@@ -1,25 +1,20 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from app.db.queries import execute
 from app.db.session import get_pool
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 import asyncpg
 
 router = APIRouter()
 
 
 class ContactIn(BaseModel):
-    name: str
+    name: str = Field(min_length=1, max_length=100)
     email: EmailStr
-    message: str
+    message: str = Field(min_length=20, max_length=2000)
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def submit_contact(payload: ContactIn, pool: asyncpg.Pool = Depends(get_pool)):
-    if len(payload.message.strip()) < 10:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Message must be at least 10 characters",
-        )
     await execute(
         pool,
         "INSERT INTO contact_submissions (name, email, message) VALUES ($1, $2, $3)",

@@ -1,23 +1,24 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
+from typing import Literal
 
 
 class CatIn(BaseModel):
-    name: str
+    name: str = Field(min_length=1, max_length=100)
     age_years: float | None = None
-    sex: str | None = None
-    breed: str | None = None
-    description: str | None = None
+    sex: Literal["m", "f", "unknown"] | None = None
+    breed: str | None = Field(default=None, max_length=100)
+    description: str | None = Field(default=None, max_length=3000)
     photo_url: str | None = None
     tags: list[str] = []
 
 
 class CatPatch(BaseModel):
-    name: str | None = None
+    name: str | None = Field(default=None, min_length=1, max_length=100)
     age_years: float | None = None
-    sex: str | None = None
-    breed: str | None = None
-    description: str | None = None
+    sex: Literal["m", "f", "unknown"] | None = None
+    breed: str | None = Field(default=None, max_length=100)
+    description: str | None = Field(default=None, max_length=3000)
     photo_url: str | None = None
     is_adopted: bool | None = None
     tags: list[str] | None = None
