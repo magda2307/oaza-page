@@ -12,6 +12,43 @@ export const metadata: Metadata = {
     'Oaza to schronisko dla kotów z FIV, FeLV, po wypadkach, w trakcie leczenia. Adoptuj lub wesprzyj ich leczenie.',
 }
 
+// Shown when live cats have no tags yet — real-looking demo data
+const STATIC_FEATURED: Cat[] = [
+  {
+    id: -1,
+    name: 'Marchewka',
+    age_years: 8,
+    breed: 'Dachowiec',
+    description: 'Marchewka trafiła do nas po wypadku drogowym. Straciła tylną łapę, ale nie straciła woli życia. Szuka spokojnego domu, gdzie może rządzić z kanapy.',
+    photo_url: 'https://static.pomagam.pl/media/project_photos/cache/GXTYZ5QBlsmN.jpg',
+    is_adopted: false,
+    tags: ['po_wypadku', 'trojnog', 'senior'],
+    created_at: '',
+  },
+  {
+    id: -2,
+    name: 'Dragon',
+    age_years: 5,
+    breed: 'Dachowiec',
+    description: 'Dragon żyje z FIV od urodzenia. Wbrew nazwie jest wyjątkowo delikatny i przywiązuje się do jednej osoby.',
+    photo_url: 'https://static.pomagam.pl/media/project_photos/cache/cNb7X85pgsIn.jpg',
+    is_adopted: false,
+    tags: ['fiv', 'spokojny', 'tylko_do_domu'],
+    created_at: '',
+  },
+  {
+    id: -3,
+    name: 'Hugo',
+    age_years: 12,
+    breed: 'Dachowiec',
+    description: 'Hugo to doświadczony starszy pan z cukrzycą. Wymaga zastrzyków dwa razy dziennie — i oddaje to z nawiązką w czystym kocie mruku.',
+    photo_url: 'https://static.pomagam.pl/media/project_photos/cache/TXAM54Avlbaf.jpg',
+    is_adopted: false,
+    tags: ['senior', 'cukrzyca', 'wymaga_lekow'],
+    created_at: '',
+  },
+]
+
 const adoptionSteps = [
   {
     num: '01',
@@ -39,11 +76,18 @@ export default async function HomePage() {
     const available = all.filter((c) => !c.is_adopted)
     const adopted = all.filter((c) => c.is_adopted)
     featuredCats = available.slice(0, 3)
+    // Fall back to static demo cats if real cats have no tags yet
+    if (!featuredCats.some((c) => c.tags?.length > 0)) {
+      featuredCats = STATIC_FEATURED
+    }
     carouselCats = available
     adoptedCats = adopted
   } catch {
-    // API unavailable at build time — render page without live cats
+    // API unavailable — use static demo data so the featured section still renders
+    featuredCats = STATIC_FEATURED
   }
+
+  if (featuredCats.length === 0) featuredCats = STATIC_FEATURED
 
   const spotlightCat = featuredCats[0] ?? null
   const secondaryCats = featuredCats.slice(1)
@@ -192,7 +236,7 @@ export default async function HomePage() {
                         </p>
                       )}
                       <Link
-                        href={`/koty/${spotlightCat.id}`}
+                        href={spotlightCat.id > 0 ? `/koty/${spotlightCat.id}` : '/koty'}
                         className="inline-flex items-center justify-center self-start bg-oaza-rust text-white font-semibold px-7 py-3.5 rounded-full hover:opacity-90 transition-opacity text-base"
                       >
                         Daj {spotlightCat.name} szansę →
@@ -205,7 +249,7 @@ export default async function HomePage() {
               {secondaryCats.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {secondaryCats.map((cat) => (
-                    <Link key={cat.id} href={`/koty/${cat.id}`} className="card group bg-white">
+                    <Link key={cat.id} href={cat.id > 0 ? `/koty/${cat.id}` : '/koty'} className="card group bg-white">
                       <div className="aspect-[4/3] relative overflow-hidden bg-stone-100">
                         {cat.photo_url ? (
                           <Image

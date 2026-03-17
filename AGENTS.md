@@ -76,6 +76,51 @@ Use the ui-designer and frontend-developer agents together with the copywriting,
 
 ---
 
+## Backend Implementation Status
+
+FastAPI + asyncpg backend at `app/`. No ORM — raw SQL via query helpers.
+
+### What's implemented
+
+**Auth (`/auth`)**
+- `POST /auth/register` — creates user, returns JWT; 409 on duplicate email
+- `POST /auth/login` — validates credentials, returns JWT
+- JWT via python-jose + passlib/bcrypt; `is_admin` flag in token
+
+**Cats (`/cats`)**
+- `GET /cats/` — public; returns non-adopted cats only; supports tag filtering via `tags[]` column
+- `GET /cats/{id}` — public
+- `POST /cats/` — admin only; all fields optional except `name`
+- `PATCH /cats/{id}` — admin only; partial update
+- `DELETE /cats/{id}` — admin only
+- Fields: `id`, `name`, `age_years`, `breed`, `description`, `photo_url`, `is_adopted`, `tags[]`, `created_at`
+
+**Applications (`/applications`)**
+- `POST /applications/` — authenticated; guards: cat must exist, not adopted, no duplicate pending application
+- `GET /applications/mine` — authenticated; returns own applications
+
+**Admin (`/admin`)**
+- `GET /admin/applications` — admin only; optional `?status_filter=` query param
+- `PATCH /admin/applications/{id}` — admin only; approving auto-sets `cat.is_adopted = true`
+
+**Photos (`/photos`)**
+- `POST /photos/upload` — admin only; uploads to Cloudflare R2 (S3-compatible via boto3)
+- Validates: JPEG/PNG/WebP/GIF, max 10 MB; returns public URL; 503 if R2 not configured
+
+**DB / infra**
+- asyncpg connection pool; helpers: `fetch_one`, `fetch_all`, `execute`, `fetch_val`
+- 2 Alembic migrations: `001_initial` (users/cats/applications), `002_cat_tags` (adds `tags TEXT[]` to cats)
+- Docker Compose runs Postgres on port 5432
+
+### What's NOT yet implemented
+- No password reset or email verification
+- No pagination on list endpoints
+- No cat search/filter by breed or age from API
+- No CORS config (needed for the Next.js frontend at a different origin)
+- No user profile endpoint (`GET /users/me`)
+
+---
+
 ## Built-in Agents
 
 | Agent | Model | Use when |
