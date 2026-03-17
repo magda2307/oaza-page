@@ -70,6 +70,7 @@ async def list_all_applications(
 async def update_application_status(
     application_id: int,
     payload: ApplicationStatus,
+    background_tasks: BackgroundTasks,
     pool: asyncpg.Pool = Depends(get_pool),
 ):
     async with pool.acquire() as conn:
@@ -92,23 +93,40 @@ async def update_application_status(
                 await conn.execute(
                     "UPDATE cats SET is_adopted = true WHERE id = $1", row["cat_id"]
                 )
+
+    if payload.status in ("approved", "rejected"):
+        user_row, cat_row = await asyncio.gather(
+            fetch_one(pool, "SELECT email FROM users WHERE id = $1", row["user_id"]),
+            fetch_one(pool, "SELECT name FROM cats WHERE id = $1", row["cat_id"]),
+        )
+        if user_row and cat_row:
+            background_tasks.add_task(
+                send_application_status_email,
+                user_row["email"],
+                cat_row["name"],
+                payload.status,
+            )
+
     return dict(row)
 
 
-@router.get("/cats", response_model=list[CatOut], dependencies=[Depends(require_admin)])
+@router.get("/cats", response_model=Page[CatOut], dependencies=[Depends(require_admin)])
 async def list_all_cats(
     pool: asyncpg.Pool = Depends(get_pool),
     page: int = Query(default=1, ge=1),
     limit: int = Query(default=20, ge=1, le=100),
 ):
     offset = (page - 1) * limit
-    rows = await fetch_all(
-        pool,
-        "SELECT id, name, age_years, sex, breed, description, photo_url, is_adopted, tags, created_at "
-        "FROM cats ORDER BY created_at DESC LIMIT $1 OFFSET $2",
-        limit, offset,
+    rows, count_row = await asyncio.gather(
+        fetch_all(
+            pool,
+            "SELECT id, name, age_years, sex, breed, description, photo_url, is_adopted, tags, created_at "
+            "FROM cats ORDER BY created_at DESC LIMIT $1 OFFSET $2",
+            limit, offset,
+        ),
+        fetch_one(pool, "SELECT COUNT(*) as total FROM cats"),
     )
-    return [dict(r) for r in rows]
+    return Page.build([dict(r) for r in rows], count_row["total"], page, limit)
 
 
 @router.get("/stats", dependencies=[Depends(require_admin)])
@@ -164,13 +182,16 @@ async def list_contact_submissions(
     limit: int = Query(default=20, ge=1, le=100),
 ):
     offset = (page - 1) * limit
-    rows = await fetch_all(
-        pool,
-        "SELECT id, name, email, message, created_at FROM contact_submissions "
-        "ORDER BY created_at DESC LIMIT $1 OFFSET $2",
-        limit, offset,
+    rows, count_row = await asyncio.gather(
+        fetch_all(
+            pool,
+            "SELECT id, name, email, message, created_at FROM contact_submissions "
+            "ORDER BY created_at DESC LIMIT $1 OFFSET $2",
+            limit, offset,
+        ),
+        fetch_one(pool, "SELECT COUNT(*) as total FROM contact_submissions"),
     )
-    return [dict(r) for r in rows]
+    return Page.build([dict(r) for r in rows], count_row["total"], page, limit)
 
 
 @router.get("/users", dependencies=[Depends(require_admin)])
@@ -180,12 +201,15 @@ async def list_users(
     limit: int = Query(default=20, ge=1, le=100),
 ):
     offset = (page - 1) * limit
-    rows = await fetch_all(
-        pool,
-        "SELECT id, email, is_admin, created_at FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2",
-        limit, offset,
+    rows, count_row = await asyncio.gather(
+        fetch_all(
+            pool,
+            "SELECT id, email, is_admin, created_at FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2",
+            limit, offset,
+        ),
+        fetch_one(pool, "SELECT COUNT(*) as total FROM users"),
     )
-    return [dict(r) for r in rows]
+    return Page.build([dict(r) for r in rows], count_row["total"], page, limit)
 
 
 @router.patch("/users/{user_id}", dependencies=[Depends(require_admin)])
@@ -224,15 +248,21 @@ async def list_all_fundraisers(
         "FROM fundraisers f LEFT JOIN cats c ON c.id = f.cat_id"
     )
     if cat_id is not None:
-        rows = await fetch_all(
-            pool,
-            f"{base} WHERE f.cat_id = $1 ORDER BY f.created_at DESC LIMIT $2 OFFSET $3",
-            cat_id, limit, offset,
+        rows, count_row = await asyncio.gather(
+            fetch_all(
+                pool,
+                f"{base} WHERE f.cat_id = $1 ORDER BY f.created_at DESC LIMIT $2 OFFSET $3",
+                cat_id, limit, offset,
+            ),
+            fetch_one(pool, "SELECT COUNT(*) as total FROM fundraisers WHERE cat_id = $1", cat_id),
         )
     else:
-        rows = await fetch_all(
-            pool,
-            f"{base} ORDER BY f.created_at DESC LIMIT $1 OFFSET $2",
-            limit, offset,
+        rows, count_row = await asyncio.gather(
+            fetch_all(
+                pool,
+                f"{base} ORDER BY f.created_at DESC LIMIT $1 OFFSET $2",
+                limit, offset,
+            ),
+            fetch_one(pool, "SELECT COUNT(*) as total FROM fundraisers"),
         )
-    return [dict(r) for r in rows]
+    return Page.build([dict(r) for r in rows], count_row["total"], page, limit)

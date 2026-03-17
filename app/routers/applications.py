@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+import asyncio
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from app.db.queries import fetch_one, fetch_all, execute
 from app.db.session import get_pool
 from app.models.application import ApplicationIn, ApplicationOut
+from app.models.pagination import Page
 from app.dependencies import get_current_user
 from app.models.auth import TokenData
 import asyncpg
@@ -63,26 +65,30 @@ async def submit_application(
     return dict(row)
 
 
-@router.get("/mine", response_model=list[ApplicationOut])
+@router.get("/mine", response_model=Page[ApplicationOut])
 async def my_applications(
     pool: asyncpg.Pool = Depends(get_pool),
     current_user: TokenData = Depends(get_current_user),
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=20, ge=1, le=100),
 ):
-    rows = await fetch_all(
-        pool,
-        "SELECT a.id, a.user_id, a.cat_id, a.message, a.status, a.created_at,"
-        "  a.housing_type, a.has_outdoor_access, a.owns_property,"
-        "  a.adults_count, a.children_ages, a.other_pets, a.all_household_agree,"
-        "  a.had_cats_before, a.previous_cats_fate, a.has_vet,"
-        "  a.hours_alone_per_day, a.is_indoor_only,"
-        "  a.motivation, a.home_visit_agreement,"
-        "  c.name as cat_name, c.photo_url as cat_photo_url "
-        "FROM applications a "
-        "JOIN cats c ON c.id = a.cat_id "
-        "WHERE a.user_id = $1 ORDER BY a.created_at DESC",
-        current_user.user_id,
+    offset = (page - 1) * limit
+    rows, count_row = await asyncio.gather(
+        fetch_all(
+            pool,
+            "SELECT a.id, a.user_id, a.cat_id, a.message, a.status, a.created_at, "
+            "a.housing_type, a.has_outdoor_access, a.owns_property, "
+            "a.adults_count, a.children_ages, a.other_pets, a.all_household_agree, "
+            "a.had_cats_before, a.previous_cats_fate, a.has_vet, "
+            "a.hours_alone_per_day, a.is_indoor_only, a.motivation, a.home_visit_agreement, "
+            "c.name as cat_name, c.photo_url as cat_photo_url "
+            "FROM applications a JOIN cats c ON c.id = a.cat_id "
+            "WHERE a.user_id = $1 ORDER BY a.created_at DESC LIMIT $2 OFFSET $3",
+            current_user.user_id, limit, offset,
+        ),
+        fetch_one(pool, "SELECT COUNT(*) as total FROM applications WHERE user_id = $1", current_user.user_id),
     )
-    return [dict(r) for r in rows]
+    return Page.build([dict(r) for r in rows], count_row["total"], page, limit)
 
 
 @router.delete("/{application_id}", status_code=status.HTTP_204_NO_CONTENT)

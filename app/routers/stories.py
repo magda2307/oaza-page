@@ -1,8 +1,10 @@
+import asyncio
 import uuid as _uuid
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, status
 from app.db.queries import fetch_one, fetch_all, execute
 from app.db.session import get_pool
 from app.models.story import StoryIn, StoryOut, StoryPatch
+from app.models.pagination import Page
 from app.dependencies import require_admin
 from app.services.storage import upload_file
 from app.config import settings
@@ -19,7 +21,7 @@ _STORY_ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp"}
 _STORY_MAX_SIZE = 10 * 1024 * 1024
 
 
-@router.get("/admin", response_model=list[StoryOut],
+@router.get("/admin", response_model=Page[StoryOut],
             dependencies=[Depends(require_admin)])
 async def list_all_stories(
     pool: asyncpg.Pool = Depends(get_pool),
@@ -29,18 +31,24 @@ async def list_all_stories(
 ):
     offset = (page - 1) * limit
     if is_published is None:
-        rows = await fetch_all(
-            pool,
-            f"{_SELECT} ORDER BY created_at DESC LIMIT $1 OFFSET $2",
-            limit, offset,
+        rows, count_row = await asyncio.gather(
+            fetch_all(
+                pool,
+                f"{_SELECT} ORDER BY created_at DESC LIMIT $1 OFFSET $2",
+                limit, offset,
+            ),
+            fetch_one(pool, "SELECT COUNT(*) as total FROM success_stories"),
         )
     else:
-        rows = await fetch_all(
-            pool,
-            f"{_SELECT} WHERE is_published = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3",
-            is_published, limit, offset,
+        rows, count_row = await asyncio.gather(
+            fetch_all(
+                pool,
+                f"{_SELECT} WHERE is_published = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3",
+                is_published, limit, offset,
+            ),
+            fetch_one(pool, "SELECT COUNT(*) as total FROM success_stories WHERE is_published = $1", is_published),
         )
-    return [dict(r) for r in rows]
+    return Page.build([dict(r) for r in rows], count_row["total"], page, limit)
 
 
 @router.get("/admin/{story_id}", response_model=StoryOut,
@@ -84,21 +92,24 @@ async def upload_story_photo(
     return dict(row)
 
 
-@router.get("/", response_model=list[StoryOut])
+@router.get("/", response_model=Page[StoryOut])
 async def list_stories(
     pool: asyncpg.Pool = Depends(get_pool),
     page: int = Query(default=1, ge=1),
     limit: int = Query(default=12, ge=1, le=50),
 ):
     offset = (page - 1) * limit
-    rows = await fetch_all(
-        pool,
-        f"{_SELECT} WHERE is_published = true "
-        "ORDER BY published_at DESC NULLS LAST, created_at DESC "
-        "LIMIT $1 OFFSET $2",
-        limit, offset,
+    rows, count_row = await asyncio.gather(
+        fetch_all(
+            pool,
+            f"{_SELECT} WHERE is_published = true "
+            "ORDER BY published_at DESC NULLS LAST, created_at DESC "
+            "LIMIT $1 OFFSET $2",
+            limit, offset,
+        ),
+        fetch_one(pool, "SELECT COUNT(*) as total FROM success_stories WHERE is_published = true"),
     )
-    return [dict(r) for r in rows]
+    return Page.build([dict(r) for r in rows], count_row["total"], page, limit)
 
 
 @router.get("/{story_id}", response_model=StoryOut)
