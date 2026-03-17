@@ -1,0 +1,11 @@
+.agent
+.claude
+.git
+frontend/node_modules
+frontend/.next
+__pycache__
+*.pyc
+.env
+data/
+tools/
+marketing/
