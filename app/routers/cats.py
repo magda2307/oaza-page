@@ -2,10 +2,25 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from app.db.queries import fetch_one, fetch_all, execute
 from app.db.session import get_pool
 from app.models.cat import CatIn, CatOut, CatPatch
+from app.models.tags import TAG_VOCABULARY
 from app.dependencies import require_admin
 import asyncpg
 
 router = APIRouter()
+
+_TAG_TO_CATEGORY: dict[str, str] = {
+    tag: key
+    for key, cat in TAG_VOCABULARY.items()
+    for tag in cat["tags"]
+}
+
+
+@router.get("/tag-categories")
+async def list_tag_categories():
+    return [
+        {"key": key, "label": cat["label"], "tags": cat["tags"]}
+        for key, cat in TAG_VOCABULARY.items()
+    ]
 
 
 @router.get("/tags")
@@ -14,7 +29,10 @@ async def list_tags(pool: asyncpg.Pool = Depends(get_pool)):
         pool,
         "SELECT unnest(tags) as tag, count(*) as cnt FROM cats WHERE NOT is_adopted GROUP BY 1 ORDER BY 2 DESC",
     )
-    return [{"tag": r["tag"], "count": r["cnt"]} for r in rows]
+    return [
+        {"tag": r["tag"], "count": r["cnt"], "category": _TAG_TO_CATEGORY.get(r["tag"])}
+        for r in rows
+    ]
 
 
 @router.get("/stats")
