@@ -24,3 +24,9 @@ def upload_file(file_bytes: bytes, filename: str, content_type: str) -> str:
         ContentType=content_type,
     )
     return f"{settings.r2_public_url.rstrip('/')}/{filename}"
+
+
+def delete_file(key: str) -> None:
+    """Delete an object from R2 by its key."""
+    client = _get_client()
+    client.delete_object(Bucket=settings.r2_bucket, Key=key)

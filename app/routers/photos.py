@@ -1,7 +1,7 @@
 import uuid
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, status
 from app.dependencies import require_admin
-from app.services.storage import upload_file
+from app.services.storage import upload_file, delete_file
 from app.config import settings
 from pydantic import BaseModel
 
@@ -41,3 +41,20 @@ async def upload_photo(file: UploadFile = File(...)):
     filename = f"cats/{uuid.uuid4()}.{ext}"
     url = upload_file(contents, filename, file.content_type)
     return UploadResponse(url=url)
+
+
+@router.delete("/{key:path}", status_code=status.HTTP_204_NO_CONTENT,
+               dependencies=[Depends(require_admin)])
+async def delete_photo(key: str):
+    if not settings.r2_account_id:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Storage is not configured",
+        )
+    try:
+        delete_file(key)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Failed to delete from storage",
+        ) from exc
