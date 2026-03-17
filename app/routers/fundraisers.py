@@ -1,7 +1,9 @@
+import asyncio
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from app.db.queries import fetch_one, fetch_all, execute
 from app.db.session import get_pool
 from app.models.fundraiser import FundraiserIn, FundraiserOut, FundraiserPatch
+from app.models.pagination import Page
 from app.dependencies import require_admin
 import asyncpg
 
@@ -14,12 +16,15 @@ _SELECT = (
 )
 
 
-@router.get("/", response_model=list[FundraiserOut])
+@router.get("/", response_model=Page[FundraiserOut])
 async def list_fundraisers(
     pool: asyncpg.Pool = Depends(get_pool),
     cat_id: int | None = None,
     active_only: bool = True,
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=20, ge=1, le=100),
 ):
+    offset = (page - 1) * limit
     conditions = []
     params = []
     if active_only:
@@ -28,10 +33,24 @@ async def list_fundraisers(
         conditions.append(f"f.cat_id = ${len(params) + 1}")
         params.append(cat_id)
     where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
-    rows = await fetch_all(
-        pool, f"{_SELECT} {where} ORDER BY f.created_at DESC", *params
+    count_conditions = []
+    count_params = []
+    if active_only:
+        count_conditions.append("is_active = true")
+    if cat_id is not None:
+        count_conditions.append(f"cat_id = ${len(count_params) + 1}")
+        count_params.append(cat_id)
+    count_where = ("WHERE " + " AND ".join(count_conditions)) if count_conditions else ""
+    full_params = params + [limit, offset]
+    rows, count_row = await asyncio.gather(
+        fetch_all(
+            pool,
+            f"{_SELECT} {where} ORDER BY f.created_at DESC LIMIT ${len(params)+1} OFFSET ${len(params)+2}",
+            *full_params,
+        ),
+        fetch_one(pool, f"SELECT COUNT(*) as total FROM fundraisers {count_where}", *count_params),
     )
-    return [dict(r) for r in rows]
+    return Page.build([dict(r) for r in rows], count_row["total"], page, limit)
 
 
 @router.get("/{fundraiser_id}", response_model=FundraiserOut)
