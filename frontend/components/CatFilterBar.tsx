@@ -2,7 +2,7 @@
 
 // TODO backend: add ?tags= filter param to GET /cats endpoint
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { Cat } from '@/types'
@@ -12,7 +12,7 @@ import { CatTagsCompact } from '@/components/CatTags'
 
 type FilterOption = {
   label: string
-  tags: string[]  // cat must have at least one of these tags to match
+  tags: string[] // cat must have at least one of these tags to match
 }
 
 const FILTERS: FilterOption[] = [
@@ -30,41 +30,38 @@ function ageLabel(years: number | null): string {
   return `${years} lat`
 }
 
-// ── Spotlight card (first available cat, full-width horizontal layout) ────────
+// ── Spotlight card ─────────────────────────────────────────────────────────────
+// Editorial: photo bleeds edge-to-edge left, no border-radius on image side.
 
 function SpotlightCard({ cat }: { cat: Cat }) {
   return (
     <Link
       href={`/koty/${cat.id}`}
-      className="card group flex flex-col sm:flex-row overflow-hidden"
+      className="group flex flex-col sm:flex-row bg-white border border-stone-200/60 rounded-xl overflow-hidden"
     >
-      {/* Image — 45% width on desktop, full width on mobile */}
-      <div className="relative w-full sm:w-[45%] aspect-[4/3] sm:aspect-auto flex-shrink-0 bg-stone-100 overflow-hidden">
+      {/* Photo — 55% desktop, full mobile */}
+      <div className="relative w-full sm:w-[55%] aspect-[4/3] sm:aspect-auto sm:min-h-[340px] flex-shrink-0 bg-stone-100 overflow-hidden">
         {cat.photo_url ? (
           <Image
             src={cat.photo_url}
             alt={cat.name}
             fill
-            sizes="(max-width: 640px) 100vw, 45vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            sizes="(max-width: 640px) 100vw, 55vw"
+            className="object-cover group-hover:brightness-[1.04] transition-[filter] duration-700"
+            priority
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-6xl text-stone-300">
-            <span aria-hidden>🐱</span>
-          </div>
+          <div className="w-full h-full bg-stone-100" />
         )}
 
-        {/* Bottom gradient fade */}
-        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/30 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/50 via-black/20 to-transparent pointer-events-none" />
 
-        {/* Tag chips — bottom-left overlay */}
         {cat.tags?.length > 0 && (
-          <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5">
+          <div className="absolute bottom-3 left-3">
             <CatTagsCompact tags={cat.tags} />
           </div>
         )}
 
-        {/* Age badge — top-right frosted */}
         {cat.age_years !== null && (
           <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-stone-700 text-xs font-semibold px-2.5 py-1 rounded-full">
             {ageLabel(cat.age_years)}
@@ -72,23 +69,20 @@ function SpotlightCard({ cat }: { cat: Cat }) {
         )}
       </div>
 
-      {/* Text — 55% width on desktop */}
-      <div className="flex flex-col justify-center px-7 py-8 sm:w-[55%]">
-        <p className="text-xs font-semibold uppercase tracking-widest text-oaza-rust mb-3">
-          Wyróżniony
-        </p>
-        <h2 className="text-2xl sm:text-3xl font-bold text-stone-900 leading-tight">
+      {/* Text */}
+      <div className="flex flex-col justify-center px-7 py-8 sm:w-[45%]">
+        <h2 className="font-display font-bold text-2xl sm:text-3xl text-stone-900 leading-tight mb-1">
           {cat.name}
         </h2>
         {cat.breed && (
-          <p className="mt-1 text-sm text-stone-500">{cat.breed}</p>
+          <p className="text-sm text-stone-400 mb-4">{cat.breed}</p>
         )}
         {cat.description && (
-          <p className="mt-4 text-stone-600 leading-relaxed line-clamp-3">
+          <p className="text-stone-600 leading-relaxed line-clamp-4 text-sm mb-6">
             {cat.description}
           </p>
         )}
-        <span className="mt-6 text-sm font-semibold text-oaza-rust group-hover:underline">
+        <span className="text-sm font-semibold text-oaza-rust group-hover:underline self-start">
           Poznaj {cat.name} →
         </span>
       </div>
@@ -96,38 +90,38 @@ function SpotlightCard({ cat }: { cat: Cat }) {
   )
 }
 
-// ── Regular grid card ─────────────────────────────────────────────────────────
+// ── Grid card ─────────────────────────────────────────────────────────────────
 
-function GridCard({ cat }: { cat: Cat }) {
+function GridCard({ cat, index }: { cat: Cat; index: number }) {
+  // Every 3rd card (0-indexed) gets a wider aspect ratio — breaks the uniform grid
+  const aspectClass = index % 3 === 0 ? 'aspect-video' : 'aspect-[4/3]'
+
   return (
-    <Link href={`/koty/${cat.id}`} className="card group flex flex-col">
-      {/* Photo */}
-      <div className="relative aspect-[4/3] bg-stone-100 overflow-hidden">
+    <Link
+      href={`/koty/${cat.id}`}
+      className="group flex flex-col bg-white rounded-xl border border-stone-200/60 overflow-hidden"
+    >
+      <div className={`relative ${aspectClass} bg-stone-100 overflow-hidden`}>
         {cat.photo_url ? (
           <Image
             src={cat.photo_url}
             alt={cat.name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            className="object-cover group-hover:brightness-[1.04] transition-[filter] duration-700"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-5xl text-stone-300">
-            <span aria-hidden>🐱</span>
-          </div>
+          <div className="w-full h-full bg-stone-100" />
         )}
 
-        {/* Bottom gradient fade */}
-        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/30 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/50 via-black/20 to-transparent pointer-events-none" />
 
-        {/* Tag chips — bottom-left overlay */}
         {cat.tags?.length > 0 && (
-          <div className="absolute bottom-3 left-3 flex flex-wrap gap-1">
-            <CatTagsCompact tags={cat.tags} />
+          <div className="absolute bottom-3 left-3">
+            <CatTagsCompact tags={cat.tags.slice(0, 2)} />
           </div>
         )}
 
-        {/* Age badge — top-right frosted */}
         {cat.age_years !== null && (
           <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-stone-700 text-xs font-semibold px-2.5 py-1 rounded-full">
             {ageLabel(cat.age_years)}
@@ -135,9 +129,8 @@ function GridCard({ cat }: { cat: Cat }) {
         )}
       </div>
 
-      {/* Content */}
       <div className="flex flex-col flex-1 p-5">
-        <p className="font-bold text-stone-900 text-xl leading-snug">{cat.name}</p>
+        <p className="font-display font-bold text-stone-900 text-xl leading-snug">{cat.name}</p>
         {cat.breed && (
           <p className="mt-0.5 text-sm text-stone-400">{cat.breed}</p>
         )}
@@ -158,13 +151,12 @@ function GridCard({ cat }: { cat: Cat }) {
 
 function EmptyState({ filterLabel }: { filterLabel: string }) {
   return (
-    <div className="col-span-full bg-oaza-warm rounded-2xl px-8 py-14 text-center">
-      <p className="text-4xl mb-4" aria-hidden>🐾</p>
+    <div className="col-span-full border border-stone-200/60 bg-white rounded-xl px-8 py-14 text-center">
       <p className="text-lg font-semibold text-stone-700 mb-2">
         Brak kotów w kategorii &ldquo;{filterLabel}&rdquo;
       </p>
-      <p className="text-stone-500 text-sm leading-relaxed max-w-sm mx-auto">
-        Wszystkie nasze podopieczne z tej grupy znalazły już dom — to dobra wiadomość.
+      <p className="text-stone-400 text-sm leading-relaxed max-w-sm mx-auto">
+        Wszystkie nasze podopieczne z tej grupy znalazły już dom.
         Sprawdź inne kategorie lub wróć wkrótce.
       </p>
     </div>
@@ -177,13 +169,12 @@ function AdoptedStrip({ cats }: { cats: Cat[] }) {
   if (cats.length === 0) return null
 
   return (
-    <section className="mt-20">
+    <section className="mt-20 border-t border-stone-200/60 pt-12">
       <div className="flex items-baseline gap-3 mb-6">
-        <h2 className="text-xl font-bold text-stone-700">Znalazły dom</h2>
+        <h2 className="font-display font-bold text-xl text-stone-800">Znalazły dom</h2>
         <span className="text-sm text-stone-400">{cats.length} kotów</span>
       </div>
 
-      {/* Horizontal scroll strip */}
       <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-none">
         {cats.map((cat) => (
           <Link
@@ -191,29 +182,25 @@ function AdoptedStrip({ cats }: { cats: Cat[] }) {
             href={`/koty/${cat.id}`}
             className="group flex-none w-40 snap-start"
           >
-            <div className="relative aspect-square rounded-2xl overflow-hidden bg-stone-100">
+            <div className="relative aspect-square rounded-xl overflow-hidden bg-stone-100">
               {cat.photo_url ? (
                 <Image
                   src={cat.photo_url}
                   alt={cat.name}
                   fill
                   sizes="160px"
-                  className="object-cover grayscale opacity-70 group-hover:opacity-90 transition-opacity duration-300"
+                  className="object-cover grayscale opacity-60 group-hover:opacity-80 transition-opacity duration-300"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-3xl text-stone-300">
-                  <span aria-hidden>🐱</span>
-                </div>
+                <div className="w-full h-full bg-stone-100" />
               )}
-
-              {/* "Dom znaleziony" overlay badge */}
               <div className="absolute inset-0 flex items-end justify-center pb-3">
                 <span className="bg-white/90 backdrop-blur-sm text-stone-600 text-xs font-semibold px-2.5 py-1 rounded-full">
-                  Dom znaleziony ✓
+                  Dom znaleziony
                 </span>
               </div>
             </div>
-            <p className="mt-2 text-sm font-medium text-stone-500 text-center truncate">
+            <p className="mt-2 text-sm font-medium text-stone-400 text-center truncate">
               {cat.name}
             </p>
           </Link>
@@ -233,7 +220,6 @@ export function CatFilterBar({
   adopted: Cat[]
 }) {
   const [activeIndex, setActiveIndex] = useState(0)
-  const scrollRef = useRef<HTMLDivElement>(null)
 
   const activeFilter = FILTERS[activeIndex]
   const filtered =
@@ -247,10 +233,9 @@ export function CatFilterBar({
 
   return (
     <>
-      {/* ── Filter bar ─────────────────────────────────────────────────────── */}
+      {/* ── Filter pills ─────────────────────────────────────────────────── */}
       <div
-        ref={scrollRef}
-        className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none mb-8"
+        className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none mb-4"
         role="group"
         aria-label="Filtruj koty"
       >
@@ -260,8 +245,8 @@ export function CatFilterBar({
             onClick={() => setActiveIndex(i)}
             className={`flex-none px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
               i === activeIndex
-                ? 'bg-oaza-green text-white'
-                : 'bg-white border border-stone-200 text-stone-600 hover:border-oaza-green hover:text-oaza-green'
+                ? 'bg-oaza-rust text-white'
+                : 'bg-white border border-stone-200 text-stone-600 hover:border-stone-400 hover:text-stone-900'
             }`}
           >
             {f.label}
@@ -269,37 +254,35 @@ export function CatFilterBar({
         ))}
       </div>
 
-      {/* ── Count badge ────────────────────────────────────────────────────── */}
-      <p className="text-sm text-stone-400 mb-6 tabular-nums">
+      {/* ── Count line ────────────────────────────────────────────────────── */}
+      <p className="text-xs text-stone-400 uppercase tracking-widest mb-8 tabular-nums">
         {filtered.length === 0
           ? 'Brak kotów w tej kategorii'
           : filtered.length === 1
-            ? '1 kot czeka'
-            : `${filtered.length} kotów czeka`}
+            ? '1 kot szuka domu'
+            : `${filtered.length} kotów szuka domu`}
       </p>
 
-      {/* ── Cat grid ───────────────────────────────────────────────────────── */}
+      {/* ── Cat grid ──────────────────────────────────────────────────────── */}
       {filtered.length === 0 ? (
         <div className="grid grid-cols-1">
           <EmptyState filterLabel={activeFilter.label} />
         </div>
       ) : (
-        <div className="space-y-6">
-          {/* Spotlight — first cat, full-width */}
+        <div className="space-y-4">
           {spotlight && <SpotlightCard cat={spotlight} />}
 
-          {/* 2-col grid for the rest */}
           {rest.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {rest.map((cat) => (
-                <GridCard key={cat.id} cat={cat} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {rest.map((cat, i) => (
+                <GridCard key={cat.id} cat={cat} index={i} />
               ))}
             </div>
           )}
         </div>
       )}
 
-      {/* ── Adopted strip ──────────────────────────────────────────────────── */}
+      {/* ── Adopted strip ─────────────────────────────────────────────────── */}
       <AdoptedStrip cats={adopted} />
     </>
   )

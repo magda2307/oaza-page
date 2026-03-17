@@ -147,12 +147,10 @@ export default function CatCarousel({
                     src={cat.photo_url}
                     alt={cat.name}
                     fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="object-cover group-hover:brightness-[1.04] transition-[filter] duration-700"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-4xl bg-oaza-green/10">
-                    🐱
-                  </div>
+                  <div className="w-full h-full bg-stone-100" />
                 )}
 
                 {/* Bottom gradient fade */}
