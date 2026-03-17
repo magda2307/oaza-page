@@ -15,6 +15,8 @@ class Settings(BaseSettings):
 
     cors_allowed_origins: list[str] = ["http://localhost:3000"]
 
+    podatek_redirect_url: str = "https://podatki.gov.pl"
+
     model_config = SettingsConfigDict(env_file=".env")
 
 

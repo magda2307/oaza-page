@@ -2,11 +2,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from app.config import settings
 from app.db.session import create_pool, close_pool, get_pool
 from app.models.errors import ErrorDetail, ErrorResponse
-from app.routers import auth, cats, applications, admin, photos
+from app.routers import auth, cats, applications, admin, photos, contact
 
 
 @asynccontextmanager
@@ -23,6 +23,7 @@ tags_metadata = [
     {"name": "auth", "description": "Registration and login. Returns a JWT Bearer token."},
     {"name": "photos", "description": "Admin photo upload to Cloudflare R2."},
     {"name": "health", "description": "Infrastructure liveness probe."},
+    {"name": "contact", "description": "Public contact form submission."},
 ]
 
 app = FastAPI(
@@ -91,6 +92,12 @@ app.include_router(cats.router, prefix="/cats", tags=["cats"])
 app.include_router(applications.router, prefix="/applications", tags=["applications"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(photos.router, prefix="/photos", tags=["photos"])
+app.include_router(contact.router, prefix="/contact", tags=["contact"])
+
+
+@app.get("/podatek", tags=["misc"], include_in_schema=False)
+async def podatek():
+    return RedirectResponse(url=settings.podatek_redirect_url, status_code=302)
 
 
 @app.get("/health", tags=["health"])
@@ -100,9 +107,9 @@ async def health():
         async with pool.acquire() as conn:
             await conn.fetchval("SELECT 1")
         return {"status": "ok"}
-    except Exception:
+    except Exception as exc:
         from fastapi import status as http_status
         raise HTTPException(
             status_code=http_status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Database unavailable",
-        )
+        ) from exc
