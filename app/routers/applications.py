@@ -39,9 +39,26 @@ async def submit_application(
 
     row = await fetch_one(
         pool,
-        "INSERT INTO applications (user_id, cat_id, message) VALUES ($1, $2, $3) "
-        "RETURNING id, user_id, cat_id, message, status, created_at",
+        "INSERT INTO applications ("
+        "  user_id, cat_id, message,"
+        "  housing_type, has_outdoor_access, owns_property,"
+        "  adults_count, children_ages, other_pets, all_household_agree,"
+        "  had_cats_before, previous_cats_fate, has_vet,"
+        "  hours_alone_per_day, is_indoor_only,"
+        "  motivation, home_visit_agreement"
+        ") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17) "
+        "RETURNING id, user_id, cat_id, message, status, created_at,"
+        "  housing_type, has_outdoor_access, owns_property,"
+        "  adults_count, children_ages, other_pets, all_household_agree,"
+        "  had_cats_before, previous_cats_fate, has_vet,"
+        "  hours_alone_per_day, is_indoor_only,"
+        "  motivation, home_visit_agreement",
         current_user.user_id, payload.cat_id, payload.message,
+        payload.housing_type, payload.has_outdoor_access, payload.owns_property,
+        payload.adults_count, payload.children_ages, payload.other_pets, payload.all_household_agree,
+        payload.had_cats_before, payload.previous_cats_fate, payload.has_vet,
+        payload.hours_alone_per_day, payload.is_indoor_only,
+        payload.motivation, payload.home_visit_agreement,
     )
     return dict(row)
 
@@ -53,8 +70,13 @@ async def my_applications(
 ):
     rows = await fetch_all(
         pool,
-        "SELECT a.id, a.user_id, a.cat_id, a.message, a.status, a.created_at, "
-        "c.name as cat_name, c.photo_url as cat_photo_url "
+        "SELECT a.id, a.user_id, a.cat_id, a.message, a.status, a.created_at,"
+        "  a.housing_type, a.has_outdoor_access, a.owns_property,"
+        "  a.adults_count, a.children_ages, a.other_pets, a.all_household_agree,"
+        "  a.had_cats_before, a.previous_cats_fate, a.has_vet,"
+        "  a.hours_alone_per_day, a.is_indoor_only,"
+        "  a.motivation, a.home_visit_agreement,"
+        "  c.name as cat_name, c.photo_url as cat_photo_url "
         "FROM applications a "
         "JOIN cats c ON c.id = a.cat_id "
         "WHERE a.user_id = $1 ORDER BY a.created_at DESC",
