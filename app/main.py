@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from app.config import settings
 from app.db.session import create_pool, close_pool, get_pool
 from app.models.errors import ErrorDetail, ErrorResponse
-from app.routers import auth, cats, applications, admin, photos, contact
+from app.routers import auth, cats, applications, admin, photos, contact, stories, cat_photos, fundraisers
 
 
 @asynccontextmanager
@@ -24,6 +24,9 @@ tags_metadata = [
     {"name": "photos", "description": "Admin photo upload to Cloudflare R2."},
     {"name": "health", "description": "Infrastructure liveness probe."},
     {"name": "contact", "description": "Public contact form submission."},
+    {"name": "stories", "description": "Adoption success stories."},
+    {"name": "cat-photos", "description": "Cat photo gallery management."},
+    {"name": "fundraisers", "description": "Per-cat fundraiser tracking."},
 ]
 
 app = FastAPI(
@@ -93,6 +96,9 @@ app.include_router(applications.router, prefix="/applications", tags=["applicati
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(photos.router, prefix="/photos", tags=["photos"])
 app.include_router(contact.router, prefix="/contact", tags=["contact"])
+app.include_router(stories.router, prefix="/stories", tags=["stories"])
+app.include_router(cat_photos.router, prefix="/cats/{cat_id}/photos", tags=["cat-photos"])
+app.include_router(fundraisers.router, prefix="/fundraisers", tags=["fundraisers"])
 
 
 @app.get("/podatek", tags=["misc"], include_in_schema=False)

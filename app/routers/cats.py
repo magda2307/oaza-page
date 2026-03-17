@@ -1,7 +1,8 @@
+import asyncio
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from app.db.queries import fetch_one, fetch_all, execute
 from app.db.session import get_pool
-from app.models.cat import CatIn, CatOut, CatPatch
+from app.models.cat import CatIn, CatOut, CatPatch, CatDetailOut
 from app.models.tags import TAG_VOCABULARY
 from app.dependencies import require_admin
 import asyncpg
@@ -91,7 +92,7 @@ async def list_cats(
     return [dict(r) for r in rows]
 
 
-@router.get("/{cat_id}", response_model=CatOut)
+@router.get("/{cat_id}", response_model=CatDetailOut)
 async def get_cat(cat_id: int, pool: asyncpg.Pool = Depends(get_pool)):
     row = await fetch_one(
         pool,
@@ -101,7 +102,28 @@ async def get_cat(cat_id: int, pool: asyncpg.Pool = Depends(get_pool)):
     )
     if not row:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cat not found")
-    return dict(row)
+
+    photos_rows, fundraiser_row = await asyncio.gather(
+        fetch_all(
+            pool,
+            "SELECT id, cat_id, url, r2_key, display_order, is_primary, created_at "
+            "FROM cat_photos WHERE cat_id = $1 ORDER BY is_primary DESC, display_order ASC",
+            cat_id,
+        ),
+        fetch_one(
+            pool,
+            "SELECT f.id, f.cat_id, f.title, f.description, f.goal_amount, f.raised_amount, "
+            "f.is_active, f.created_at, f.closed_at, c.name as cat_name "
+            "FROM fundraisers f LEFT JOIN cats c ON c.id = f.cat_id "
+            "WHERE f.cat_id = $1 AND f.is_active = true ORDER BY f.created_at DESC LIMIT 1",
+            cat_id,
+        ),
+    )
+
+    result = dict(row)
+    result["photos"] = [dict(p) for p in photos_rows]
+    result["fundraiser"] = dict(fundraiser_row) if fundraiser_row else None
+    return result
 
 
 @router.post("/", response_model=CatOut, status_code=status.HTTP_201_CREATED,

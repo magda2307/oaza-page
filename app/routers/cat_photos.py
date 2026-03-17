@@ -6,6 +6,7 @@ from app.dependencies import require_admin
 from app.services.storage import upload_file, delete_file
 from app.config import settings
 from pydantic import BaseModel
+from app.models.cat_photo import CatPhotoOut
 import asyncpg
 
 router = APIRouter()
@@ -14,15 +15,6 @@ ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp"}
 MAX_FILE_SIZE = 10 * 1024 * 1024
 
 _SELECT = "SELECT id, cat_id, url, r2_key, display_order, is_primary, created_at FROM cat_photos"
-
-
-class CatPhotoOut(BaseModel):
-    id: int
-    cat_id: int
-    url: str
-    r2_key: str | None
-    display_order: int
-    is_primary: bool
 
 
 @router.get("/", response_model=list[CatPhotoOut])

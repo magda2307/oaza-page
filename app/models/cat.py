@@ -34,3 +34,12 @@ class CatOut(BaseModel):
     is_adopted: bool
     tags: list[str]
     created_at: datetime
+
+
+from app.models.cat_photo import CatPhotoOut
+from app.models.fundraiser import FundraiserOut
+
+
+class CatDetailOut(CatOut):
+    photos: list[CatPhotoOut] = []
+    fundraiser: FundraiserOut | None = None
