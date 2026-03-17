@@ -3,7 +3,7 @@
 
 type TagMeta = { label: string; className: string }
 
-const TAG_META: Record<string, TagMeta> = {
+const TAG_META = {
   // ── Personality — emerald ──────────────────────────────────────────────
   przytulasek:          { label: 'Przytulasek',          className: 'bg-emerald-100 text-emerald-800' },
   zabawny:              { label: 'Zabawny',               className: 'bg-emerald-100 text-emerald-800' },
