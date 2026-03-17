@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import type { Cat } from '@/types'
+import { ageLabel } from '@/lib/format'
 
 type CarouselItem = {
   key: string
@@ -47,11 +48,6 @@ function sortTags(tags: string[]): string[] {
   })
 }
 
-function ageLabel(years: number): string {
-  if (years === 1) return '1 rok'
-  if (years >= 2 && years <= 4) return `${years} lata`
-  return `${years} lat`
-}
 
 export default function CatCarousel({
   cats,

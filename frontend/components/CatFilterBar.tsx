@@ -7,12 +7,14 @@ import Link from 'next/link'
 import Image from 'next/image'
 import type { Cat } from '@/types'
 import { CatTagsCompact } from '@/components/CatTags'
+import type { TagKey } from '@/components/CatTags'
+import { ageLabel } from '@/lib/format'
 
 // ── Filter definitions ────────────────────────────────────────────────────────
 
 type FilterOption = {
   label: string
-  tags: string[] // cat must have at least one of these tags to match
+  tags: TagKey[] // cat must have at least one of these tags to match
 }
 
 const FILTERS: FilterOption[] = [
@@ -22,13 +24,6 @@ const FILTERS: FilterOption[] = [
   { label: 'Po wypadku', tags: ['po_wypadku', 'po_operacji', 'trojnog'] },
   { label: 'Terminalnie chore', tags: ['terminalnie_chory', 'opieka_paliatywna', 'nowotwor'] },
 ]
-
-function ageLabel(years: number | null): string {
-  if (years === null) return ''
-  if (years === 1) return '1 rok'
-  if (years <= 4) return `${years} lata`
-  return `${years} lat`
-}
 
 // ── Spotlight card ─────────────────────────────────────────────────────────────
 // Editorial: photo bleeds edge-to-edge left, no border-radius on image side.

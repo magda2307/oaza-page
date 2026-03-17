@@ -8,7 +8,7 @@ const playfair = Playfair_Display({
   subsets: ['latin', 'latin-ext'],
   variable: '--font-display',
   display: 'swap',
-  weight: ['400', '700', '900'],
+  weight: ['700', '900'],
   style: ['normal', 'italic'],
 })
 

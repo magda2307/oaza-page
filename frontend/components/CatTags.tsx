@@ -56,7 +56,9 @@ const TAG_META = {
   po_operacji:          { label: 'Po operacji',           className: 'bg-violet-100 text-violet-800' },
   bezzebny:             { label: 'Bezzębny',              className: 'bg-violet-100 text-violet-800' },
   w_leczeniu:           { label: 'W leczeniu',            className: 'bg-violet-100 text-violet-800' },
-}
+} satisfies Record<string, TagMeta>
+
+export type TagKey = keyof typeof TAG_META
 
 export function getTagLabel(key: string): string {
   return TAG_META[key]?.label ?? key

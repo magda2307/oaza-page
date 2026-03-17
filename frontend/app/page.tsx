@@ -8,6 +8,7 @@ import { CatTagsCompact } from '@/components/CatTags'
 import { RevealOnScroll } from '@/components/RevealOnScroll'
 import { AnimatedCounter } from '@/components/AnimatedCounter'
 import { StepConnector } from '@/components/StepConnector'
+import { ageLabel } from '@/lib/format'
 
 export const metadata: Metadata = {
   title: 'Oaza — koty, których nikt inny nie przyjmie',
@@ -122,12 +123,6 @@ const testimonials = [
     catInfo: 'Hugo, cukrzyca',
   },
 ]
-
-function ageLabel(years: number): string {
-  if (years === 1) return '1 rok'
-  if (years >= 2 && years <= 4) return `${years} lata`
-  return `${years} lat`
-}
 
 export default async function HomePage() {
   let featuredCats: Cat[] = []
