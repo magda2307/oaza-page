@@ -20,8 +20,13 @@ async def list_all_applications(
     user_id: int | None = None,
 ):
     base = (
-        "SELECT a.id, a.user_id, a.cat_id, a.message, a.status, a.created_at, "
-        "c.name as cat_name, c.photo_url as cat_photo_url, u.email as user_email "
+        "SELECT a.id, a.user_id, a.cat_id, a.message, a.status, a.created_at,"
+        "  a.housing_type, a.has_outdoor_access, a.owns_property,"
+        "  a.adults_count, a.children_ages, a.other_pets, a.all_household_agree,"
+        "  a.had_cats_before, a.previous_cats_fate, a.has_vet,"
+        "  a.hours_alone_per_day, a.is_indoor_only,"
+        "  a.motivation, a.home_visit_agreement,"
+        "  c.name as cat_name, c.photo_url as cat_photo_url, u.email as user_email "
         "FROM applications a "
         "JOIN cats c ON c.id = a.cat_id "
         "JOIN users u ON u.id = a.user_id"
@@ -56,7 +61,12 @@ async def update_application_status(
         async with conn.transaction():
             row = await conn.fetchrow(
                 "UPDATE applications SET status = $2 WHERE id = $1 "
-                "RETURNING id, user_id, cat_id, message, status, created_at",
+                "RETURNING id, user_id, cat_id, message, status, created_at,"
+                "  housing_type, has_outdoor_access, owns_property,"
+                "  adults_count, children_ages, other_pets, all_household_agree,"
+                "  had_cats_before, previous_cats_fate, has_vet,"
+                "  hours_alone_per_day, is_indoor_only,"
+                "  motivation, home_visit_agreement",
                 application_id, payload.status,
             )
             if not row:
