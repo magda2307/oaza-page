@@ -552,6 +552,7 @@ export default async function KotPage({ params }: Props) {
 
       {/* Sticky mobile CTA */}
       {!cat.is_adopted && <StickyAdoptCTA catId={cat.id} catName={cat.name} />}
+      <AdminToolbar catId={cat.id} />
 
     </div>
   )

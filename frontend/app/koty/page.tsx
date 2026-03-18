@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getCats } from '@/lib/api'
 import type { Cat } from '@/types'
 import { CatFilterBar } from '@/components/CatFilterBar'
+import { AdminToolbar } from '@/components/AdminToolbar'
 
 export const metadata: Metadata = {
   title: 'Koty do adopcji — Oaza',
@@ -139,6 +140,7 @@ export default async function KotyPage() {
           <CatFilterBar available={available} adopted={adopted} />
         </div>
       </div>
+      <AdminToolbar />
     </>
   )
 }
