@@ -61,7 +61,7 @@ const TAG_META = {
 export type TagKey = keyof typeof TAG_META
 
 export function getTagLabel(key: string): string {
-  return TAG_META[key]?.label ?? key
+  return (TAG_META as Record<string, TagMeta | undefined>)[key]?.label ?? key
 }
 
 // Ordered list of all available tags, grouped for the admin picker
