@@ -136,7 +136,12 @@ export default function Footer() {
       {/* Copyright */}
       <div className="border-t border-white/10 max-w-5xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-green-300">
         <span>© {new Date().getFullYear()} Oaza. Wszelkie prawa zastrzeżone.</span>
-        <span className="text-green-300/60">Made with ♥ for cats who deserve a chance</span>
+        <div className="flex items-center gap-3">
+          <span className="text-green-300/60">Made with ♥ for cats who deserve a chance</span>
+          <Link href="/logowanie?next=/admin" className="text-green-300/30 hover:text-green-300/60 transition-colors">
+            admin
+          </Link>
+        </div>
       </div>
 
     </footer>
