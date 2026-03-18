@@ -215,7 +215,7 @@ export default function DemoKotPage() {
       {/* ── Hero — photo left, data right ───────────────────────────────────── */}
       <section className="bg-oaza-warm">
         <div className="max-w-5xl mx-auto px-4 pt-10 pb-14 sm:pt-14">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-8 lg:gap-12 items-start">
 
             {/* ── Photo (left on desktop, top on mobile) ── */}
             <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-stone-200">
@@ -283,6 +283,11 @@ export default function DemoKotPage() {
                   Wesprzyj leczenie →
                 </Link>
               </p>
+
+              {/* Description */}
+              <p className="mt-8 text-stone-600 leading-relaxed text-base border-t border-stone-200/60 pt-7">
+                {cat.description}
+              </p>
             </div>
 
           </div>
@@ -295,8 +300,6 @@ export default function DemoKotPage() {
 
           {/* ── Left column ──────────────────────────────────────────────────── */}
           <article className="min-w-0">
-            <p className="text-stone-700 leading-relaxed text-lg">{cat.description}</p>
-
             {/* Honest truth blockquote */}
             {honestTruth && (
               <blockquote className="mt-10 pl-6 border-l-[3px] border-oaza-green/40 relative">

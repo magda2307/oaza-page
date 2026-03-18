@@ -305,7 +305,7 @@ export default async function KotPage({ params }: Props) {
       {/* ── Hero — photo left, data right ───────────────────────────────────── */}
       <section className="bg-oaza-warm">
         <div className="max-w-5xl mx-auto px-4 pt-10 pb-14 sm:pt-14">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-8 lg:gap-12 items-start">
 
             {/* ── Photo (left on desktop, top on mobile) ── */}
             <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-stone-200">
@@ -406,6 +406,17 @@ export default async function KotPage({ params }: Props) {
                   </Link>
                 </p>
               )}
+
+              {/* Description */}
+              {cat.description ? (
+                <p className="mt-8 text-stone-600 leading-relaxed text-base border-t border-stone-200/60 pt-7">
+                  {cat.description}
+                </p>
+              ) : (
+                <p className="mt-8 text-stone-400 leading-relaxed text-base italic border-t border-stone-200/60 pt-7">
+                  Opis tego kota jest w przygotowaniu. Skontaktuj się z nami, żeby dowiedzieć się więcej.
+                </p>
+              )}
             </div>
 
           </div>
@@ -418,15 +429,6 @@ export default async function KotPage({ params }: Props) {
 
           {/* ── Left column ──────────────────────────────────────────────────── */}
           <article className="min-w-0">
-
-            {/* Description */}
-            {cat.description ? (
-              <p className="text-stone-700 leading-relaxed text-lg">{cat.description}</p>
-            ) : (
-              <p className="text-stone-400 leading-relaxed text-lg italic">
-                Opis tego kota jest w przygotowaniu. Skontaktuj się z nami, żeby dowiedzieć się więcej.
-              </p>
-            )}
 
             {/* Honest truth blockquote */}
             {honestTruth && (
