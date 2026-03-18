@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import type { ReactNode } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -8,63 +7,24 @@ import type { Cat } from '@/types'
 import { CatTags, CatTagsCompact } from '@/components/CatTags'
 import { ageLabel } from '@/lib/format'
 import { StickyAdoptCTA } from '@/components/StickyAdoptCTA'
+import { PhotoCarousel } from '@/components/PhotoCarousel'
+import { Section, Fact, CompatBadge } from '@/components/CatProfileSections'
+import {
+  PERSONALITY_TAGS,
+  COMPAT_POSITIVE_TAGS,
+  COMPAT_CAUTION_TAGS,
+  HEALTH_SERIOUS_TAGS,
+  HEALTH_SPECIAL_TAGS,
+  MEDICAL_CONTEXT,
+  getHonestTruth,
+  hasAnyTag,
+  getCompatStatus,
+  deriveIdealHomeBullets,
+} from '@/lib/catProfile'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 type Props = { params: Promise<{ id: string }> }
-
-type CompatStatus = 'yes' | 'no' | 'unknown'
-
-// ── Tag group constants ────────────────────────────────────────────────────────
-
-const PERSONALITY_TAGS = [
-  'przytulasek', 'zabawny', 'spokojny', 'towarzyski', 'ciekawski',
-  'gadatliwy', 'niezalezny', 'czuly', 'energiczny', 'zrownowazona',
-  'niesmialy', 'plochliwy',
-]
-
-const COMPAT_POSITIVE_TAGS = [
-  'lubi_koty', 'lubi_psy', 'lubi_dzieci', 'tylko_do_domu',
-  'dla_poczatkujacych', 'para_nierozlaczna',
-]
-
-const COMPAT_CAUTION_TAGS = [
-  'jako_jedynak', 'wymaga_doswiadczenia', 'potrzebuje_ciszy',
-  'nie_dla_dzieci', 'agresywny',
-]
-
-const HEALTH_SERIOUS_TAGS = [
-  'fiv', 'felv', 'nowotwor', 'terminalnie_chory', 'opieka_paliatywna',
-]
-
-const HEALTH_SPECIAL_TAGS = [
-  'senior', 'kociak', 'trojnog', 'niewidomy', 'gluchy', 'choroba_nerek',
-  'cukrzyca', 'choroba_serca', 'astma', 'ch_chwiejny', 'po_wypadku',
-  'wymaga_lekow', 'po_operacji', 'bezzebny', 'w_leczeniu',
-]
-
-// ── Medical context map ────────────────────────────────────────────────────────
-
-const MEDICAL_CONTEXT: Record<string, string> = {
-  fiv: 'Kot FIV+ może żyć wiele lat. Wirus nie przenosi się na ludzi. Potrzebuje tylko domu — jak każdy inny.',
-  felv: 'FeLV wymaga monitoringu i opieki weterynaryjnej. Nie przenosi się na ludzi ani psy.',
-  nowotwor: 'Leczony onkologicznie. Regularnie pod opieką weterynarza.',
-  terminalnie_chory: 'Leczenie nieuleczalne — celem jest komfort i jakość ostatnich miesięcy.',
-  opieka_paliatywna: 'Wymaga opieki paliatywnej: leki, wizyty weterynaryjne, cisza i spokój.',
-  cukrzyca: 'Wymaga regularnych zastrzyków insuliny, dwa razy dziennie. Schemat szybko staje się rutyną.',
-  choroba_nerek: 'Wymaga specjalnej diety i regularnych badań krwi.',
-  choroba_serca: 'Pod stałą opieką kardiologa weterynaryjnego.',
-  astma: 'Wymaga inhalatora przy atakach. Unikamy dymu, zapachów, środków czystości.',
-  trojnog: 'Trzy łapy działają tak samo jak cztery. Adaptuje się szybko.',
-  niewidomy: 'Niewidomy kot w stabilnym otoczeniu radzi sobie świetnie. Nie przestawiaj mebli.',
-  gluchy: 'Głuchota nie przeszkadza w mruczeniu. Komunikacja przez dotyk i wibracje.',
-  bezzebny: 'Bez zębów — mokra karma lub namoczona sucha. Nic mu nie brakuje.',
-  wymaga_lekow: 'Regularnie przyjmuje leki. Dawkowanie jest proste, po kilku dniach staje się nawykiem.',
-  po_wypadku: 'Przeszedł poważny wypadek. Zrehabilitowany — gotowy na spokojny dom.',
-  po_operacji: 'Po operacji — w pełni wyleczony. Regularne kontrole weterynaryjne.',
-  w_leczeniu: 'Aktualnie w trakcie leczenia. Stabilny i monitorowany.',
-  senior: 'Senior potrzebuje ciepłego miejsca i spokojnego rytmu. Nie wymaga dużo — za to daje stabilną obecność.',
-}
 
 // ── Related cats static fallback ──────────────────────────────────────────────
 
@@ -104,103 +64,6 @@ const RELATED_FALLBACK: Cat[] = [
   },
 ]
 
-// ── Helper functions ───────────────────────────────────────────────────────────
-
-function getHonestTruth(tags: string[]): string | null {
-  if (tags.includes('fiv') || tags.includes('felv'))
-    return 'Żyje z wirusem — nie przez niego. Wiele kotów z FIV dożywa sędziwego wieku.'
-  if (tags.includes('terminalnie_chory') || tags.includes('opieka_paliatywna') || tags.includes('nowotwor'))
-    return 'Może zostać rok. Może mniej. Każda godzina na miękkiej kanapie jest warta każdego trudu.'
-  if (tags.includes('po_wypadku') || tags.includes('trojnog'))
-    return 'Przeżył wypadek. Ciało się goi. Chęć do życia jest nienaruszona.'
-  if (tags.includes('senior'))
-    return 'Dojrzały, spokojny, wdzięczny. Wie, czego chce — i nie będzie Cię tego uczyć.'
-  if (tags.includes('cukrzyca') || tags.includes('wymaga_lekow'))
-    return 'Wymaga regularnej opieki. Oddaje to z nawiązką — w czystym, mruczącym spokoju.'
-  return null
-}
-
-function hasAnyTag(tags: string[], group: string[]): boolean {
-  return group.some((t) => tags.includes(t))
-}
-
-function getCompatStatus(tags: string[], yesTag?: string, noTag?: string): CompatStatus {
-  if (yesTag && tags.includes(yesTag)) return 'yes'
-  if (noTag && tags.includes(noTag)) return 'no'
-  return 'unknown'
-}
-
-function deriveIdealHomeBullets(tags: string[]): string[] {
-  const bullets: string[] = []
-  if (tags.includes('niesmialy') || tags.includes('plochliwy') || tags.includes('potrzebuje_ciszy'))
-    bullets.push('Spokojne, ciche otoczenie — bez głośnej muzyki, bez zamieszania')
-  if (tags.includes('jako_jedynak'))
-    bullets.push('Najlepiej bez innych kotów, przynajmniej na początku')
-  if (tags.includes('nie_dla_dzieci'))
-    bullets.push('Nie dla rodzin z małymi dziećmi')
-  if (tags.includes('tylko_do_domu'))
-    bullets.push('Dom bez wyjścia na zewnątrz — kot wyłącznie domowy')
-  if (tags.includes('wymaga_doswiadczenia'))
-    bullets.push('Opiekun z doświadczeniem w pracy z nieśmiałymi lub chorymi kotami')
-  if (tags.includes('dla_poczatkujacych'))
-    bullets.push('Świetny wybór dla kogoś, kto adoptuje kota po raz pierwszy')
-  if (tags.includes('para_nierozlaczna'))
-    bullets.push('Musi być adoptowany razem ze swoim partnerem — nierozłączna para')
-  if (tags.includes('wymaga_lekow') || tags.includes('cukrzyca'))
-    bullets.push('Właściciel gotowy na codzienną rutynę podawania leków')
-  return bullets
-}
-
-// ── Small component helpers ────────────────────────────────────────────────────
-
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="pt-10 mt-10 border-t border-stone-100">
-      <h2 className="font-display font-bold text-xl text-stone-900 mb-5">{title}</h2>
-      {children}
-    </section>
-  )
-}
-
-function Fact({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-start justify-between gap-4 py-2.5 border-b border-stone-100 last:border-0">
-      <span className="text-sm text-stone-400 shrink-0">{label}</span>
-      <span className="text-sm text-stone-800 font-medium text-right">{value}</span>
-    </div>
-  )
-}
-
-function CompatBadge({ status, label }: { status: CompatStatus; label: string }) {
-  const styles: Record<CompatStatus, { wrapper: string; icon: string; iconColor: string; labelColor: string }> = {
-    yes: {
-      wrapper: 'bg-emerald-50 border border-emerald-200',
-      icon: '✓',
-      iconColor: 'text-emerald-700',
-      labelColor: 'text-stone-700',
-    },
-    no: {
-      wrapper: 'bg-rose-50 border border-rose-200',
-      icon: '✗',
-      iconColor: 'text-rose-600',
-      labelColor: 'text-stone-700',
-    },
-    unknown: {
-      wrapper: 'bg-stone-50 border border-stone-200',
-      icon: '?',
-      iconColor: 'text-stone-400',
-      labelColor: 'text-stone-400',
-    },
-  }
-  const s = styles[status]
-  return (
-    <div className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 ${s.wrapper}`}>
-      <span className={`text-sm font-bold leading-none ${s.iconColor}`}>{s.icon}</span>
-      <span className={`text-sm font-medium ${s.labelColor}`}>{label}</span>
-    </div>
-  )
-}
-
 // ── Metadata ──────────────────────────────────────────────────────────────────
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -227,12 +90,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function KotPage({ params }: Props) {
   const { id } = await params
-  let cat
-  try {
-    cat = await getCat(Number(id))
-  } catch {
-    notFound()
-  }
+
+  // Fetch cat + all cats in parallel
+  const [catResult, allCatsResult] = await Promise.allSettled([
+    getCat(Number(id)),
+    getCats(),
+  ])
+  if (catResult.status !== 'fulfilled') notFound()
+  const cat = catResult.value
 
   const tags = cat.tags ?? []
   const honestTruth = getHonestTruth(tags)
@@ -245,46 +110,49 @@ export default async function KotPage({ params }: Props) {
     .join(' · ')
 
   // Tag group derivations
-  const personalityTags = tags.filter((t) => PERSONALITY_TAGS.includes(t))
-  const cautionTags = tags.filter((t) => COMPAT_CAUTION_TAGS.includes(t))
-  const hasPersonality = personalityTags.length > 0 || cautionTags.length > 0
+  const personalityTags   = tags.filter((t) => PERSONALITY_TAGS.includes(t))
+  const cautionTags       = tags.filter((t) => COMPAT_CAUTION_TAGS.includes(t))
+  const hasPersonality    = personalityTags.length > 0 || cautionTags.length > 0
 
-  const compatTags = [...COMPAT_POSITIVE_TAGS, ...COMPAT_CAUTION_TAGS]
-  const hasCompat = hasAnyTag(tags, compatTags)
-  const hasPairTag = tags.includes('para_nierozlaczna')
+  const hasCompat         = hasAnyTag(tags, [...COMPAT_POSITIVE_TAGS, ...COMPAT_CAUTION_TAGS])
+  const hasPairTag        = tags.includes('para_nierozlaczna')
 
   const healthSeriousTags = tags.filter((t) => HEALTH_SERIOUS_TAGS.includes(t))
   const healthSpecialTags = tags.filter((t) => HEALTH_SPECIAL_TAGS.includes(t))
-  const hasHealth = healthSeriousTags.length > 0 || healthSpecialTags.length > 0
+  const hasHealth         = healthSeriousTags.length > 0 || healthSpecialTags.length > 0
+  const hasSpecialNeeds   = hasHealth
 
-  const hasSpecialNeedsStatus = hasAnyTag(tags, [...HEALTH_SERIOUS_TAGS, ...HEALTH_SPECIAL_TAGS])
+  const idealHomeBullets  = deriveIdealHomeBullets(tags)
 
-  const idealHomeBullets = deriveIdealHomeBullets(tags)
-
-  // Fetch related cats — sorted by tag overlap, fallback to static
+  // Related cats — sorted by tag overlap (O(1) Set lookups), fallback to static
   let relatedCats: Cat[] = []
-  try {
-    const allCats = await getCats()
-    const others = allCats.items.filter((c) => c.id !== cat.id)
+  if (allCatsResult.status === 'fulfilled') {
+    const tagSet = new Set(tags)
+    const others = allCatsResult.value.items.filter((c) => c.id !== cat.id)
     const scored = others.map((c) => ({
       c,
-      score: (c.tags ?? []).filter((t) => tags.includes(t)).length,
+      score: (c.tags ?? []).filter((t) => tagSet.has(t)).length,
     }))
     scored.sort((a, b) => b.score - a.score || b.c.id - a.c.id)
     relatedCats = scored.slice(0, 3).map((x) => x.c)
-  } catch {
-    // API unavailable — static fallback below
   }
   if (relatedCats.length === 0) {
     relatedCats = RELATED_FALLBACK.filter((c) => c.id !== cat.id).slice(0, 3)
   }
 
-  // Status badge variant
+  // Status badge
   const statusBadge: 'adopted' | 'special' | 'available' = cat.is_adopted
     ? 'adopted'
-    : hasSpecialNeedsStatus
+    : hasSpecialNeeds
     ? 'special'
     : 'available'
+
+  // Photos for carousel
+  const photos = cat.photos?.length
+    ? cat.photos
+    : cat.photo_url
+    ? [cat.photo_url]
+    : []
 
   return (
     <div className="bg-white">
@@ -307,31 +175,20 @@ export default async function KotPage({ params }: Props) {
         <div className="max-w-5xl mx-auto px-4 pt-10 pb-14 sm:pt-14">
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-8 lg:gap-12 items-start">
 
-            {/* ── Photo (left on desktop, top on mobile) ── */}
-            <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-stone-200">
-              {cat.photo_url ? (
-                <Image
-                  src={cat.photo_url}
-                  alt={cat.name}
-                  fill
-                  priority
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-cover duration-500"
-                />
-              ) : (
-                <div className="w-full h-full bg-stone-200" />
-              )}
-              {/* Soft bottom gradient */}
-              <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-              {/* Health chips overlaid bottom-left */}
-              {(healthSeriousTags.length > 0 || healthSpecialTags.length > 0) && (
-                <div className="absolute bottom-4 left-4">
-                  <CatTagsCompact tags={[...healthSeriousTags, ...healthSpecialTags].slice(0, 2)} />
-                </div>
-              )}
+            {/* ── Photo / Carousel ── */}
+            <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-stone-200 shadow-[0_8px_40px_rgba(0,0,0,0.14)]">
+              <PhotoCarousel
+                photos={photos}
+                alt={cat.name}
+                overlay={
+                  healthSeriousTags.length > 0 || healthSpecialTags.length > 0 ? (
+                    <CatTagsCompact tags={[...healthSeriousTags, ...healthSpecialTags].slice(0, 2)} />
+                  ) : undefined
+                }
+              />
             </div>
 
-            {/* ── Text content (right on desktop, bottom on mobile) ── */}
+            {/* ── Text content ── */}
             <div className="lg:pt-2">
               {/* Status badge */}
               <div className="mb-4">
@@ -460,7 +317,7 @@ export default async function KotPage({ params }: Props) {
                 />
                 <Fact
                   label="Specjalne potrzeby"
-                  value={hasSpecialNeedsStatus ? 'Tak' : 'Nie'}
+                  value={hasSpecialNeeds ? 'Tak' : 'Nie'}
                 />
                 {tags.includes('tylko_do_domu') && (
                   <Fact label="Warunki" value="Wyłącznie domowy" />
