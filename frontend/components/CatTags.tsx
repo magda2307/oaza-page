@@ -98,7 +98,7 @@ export const TAG_GROUPS: { heading: string; keys: string[] }[] = [
 type Size = 'sm' | 'md'
 
 function Chip({ tagKey, size = 'md' }: { tagKey: string; size?: Size }) {
-  const meta = TAG_META[tagKey]
+  const meta = (TAG_META as Record<string, TagMeta | undefined>)[tagKey]
   if (!meta) return null
   const padding = size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-3 py-1 text-sm'
   return (
@@ -160,7 +160,7 @@ export function TagPicker({
           </p>
           <div className="flex flex-wrap gap-2">
             {keys.map((key) => {
-              const meta = TAG_META[key]
+              const meta = (TAG_META as Record<string, TagMeta | undefined>)[key]
               if (!meta) return null
               const active = selected.includes(key)
               return (
