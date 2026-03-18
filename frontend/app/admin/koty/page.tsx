@@ -18,7 +18,7 @@ export default function AdminKotyPage() {
       return
     }
     getCats()
-      .then(setCats)
+      .then((page) => setCats(page.items))
       .catch(() => setError('Nie udało się załadować listy kotów.'))
       .finally(() => setLoading(false))
   }, [router])

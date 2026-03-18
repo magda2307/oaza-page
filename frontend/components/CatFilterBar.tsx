@@ -217,12 +217,11 @@ export function CatFilterBar({
   const [activeIndex, setActiveIndex] = useState(0)
 
   const activeFilter = FILTERS[activeIndex]
+  const filterSet = new Set<string>(activeFilter.tags)
   const filtered =
-    activeFilter.tags.length === 0
+    filterSet.size === 0
       ? available
-      : available.filter((cat) =>
-          cat.tags?.some((t) => activeFilter.tags.includes(t)),
-        )
+      : available.filter((cat) => cat.tags?.some((t) => filterSet.has(t)))
 
   const [spotlight, ...rest] = filtered
 

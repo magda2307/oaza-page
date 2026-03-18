@@ -6,14 +6,13 @@ import { getCat } from '@/lib/api'
 import { CatTags, CatTagsCompact } from '@/components/CatTags'
 import { ageLabel } from '@/lib/format'
 
-type Props = { params: Promise<{ id: string }> }
+type Props = { params: { id: string } }
 
 // ── Metadata ──────────────────────────────────────────────────────────────────
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
-    const { id } = await params
-    const cat = await getCat(Number(id))
+    const cat = await getCat(Number(params.id))
     return {
       title: `${cat.name} — Oaza`,
       description: cat.description
@@ -49,10 +48,9 @@ function getHonestTruth(tags: string[]): string | null {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function KotPage({ params }: Props) {
-  const { id } = await params
   let cat
   try {
-    cat = await getCat(Number(id))
+    cat = await getCat(Number(params.id))
   } catch {
     notFound()
   }

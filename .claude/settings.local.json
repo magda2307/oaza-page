@@ -5,7 +5,8 @@
       "Bash(npx skills:*)",
       "Bash(ls:*)",
       "Bash(find:*)",
-      "Bash(python3 -c \":*)"
+      "Bash(python3 -c \":*)",
+      "Bash(pnpm build:*)"
     ]
   }
 }
