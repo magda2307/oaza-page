@@ -357,9 +357,9 @@ export default async function KotPage({ params }: Props) {
         </div>
       </div>
 
-      {/* ── Mobile CTA strip ─────────────────────────────────────────────────── */}
+      {/* ── Mobile CTA strip (also acts as IntersectionObserver sentinel) ─────── */}
       {!cat.is_adopted && (
-        <div className="lg:hidden px-4 py-4 flex gap-3 border-b border-stone-100">
+        <div id="mobile-cta-strip" className="lg:hidden px-4 py-4 flex gap-3 border-b border-stone-100">
           <Link
             href={`/koty/${cat.id}/aplikuj`}
             className="flex-1 flex items-center justify-center bg-oaza-rust text-white font-semibold text-sm px-4 py-3 rounded-full hover:opacity-90 transition-opacity text-center"
