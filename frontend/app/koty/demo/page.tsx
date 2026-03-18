@@ -5,6 +5,7 @@
  */
 
 import type { Metadata } from 'next'
+import type { Cat } from '@/types'
 import Image from 'next/image'
 import Link from 'next/link'
 import { CatTags, CatTagsCompact } from '@/components/CatTags'
@@ -60,33 +61,39 @@ const DEMO_CAT = {
   ],
 }
 
-const DEMO_RELATED = [
+const DEMO_RELATED: Cat[] = [
   {
     id: -1,
     name: 'Dragon',
     age_years: 5,
     breed: 'Dachowiec',
+    description: null,
     is_adopted: false,
     photo_url: 'https://static.pomagam.pl/media/project_photos/cache/cNb7X85pgsIn.jpg',
     tags: ['fiv', 'spokojny'],
+    created_at: '',
   },
   {
     id: -2,
     name: 'Karmel',
     age_years: 7,
     breed: 'Dachowiec',
+    description: null,
     is_adopted: true,
     photo_url: 'https://static.pomagam.pl/media/project_photos/cache/qC8KyJ-hffJ-.jpg',
     tags: ['nowotwor', 'w_leczeniu'],
+    created_at: '',
   },
   {
     id: -3,
     name: 'Hugo',
     age_years: 12,
     breed: 'Dachowiec',
+    description: null,
     is_adopted: false,
     photo_url: 'https://static.pomagam.pl/media/project_photos/cache/TXAM54Avlbaf.jpg',
     tags: ['senior', 'cukrzyca'],
+    created_at: '',
   },
 ]
 

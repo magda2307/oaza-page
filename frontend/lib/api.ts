@@ -26,6 +26,7 @@ async function apiFetch<T>(
 // --- Cats ---
 export const getCats = (params?: string) => apiFetch<Page<Cat>>(`/cats${params ? `?${params}` : ''}`)
 export const getCat = (id: number) => apiFetch<Cat>(`/cats/${id}`)
+export const getRelatedCats = (id: number, limit = 3) => apiFetch<Cat[]>(`/cats/${id}/related?limit=${limit}`)
 
 // --- Auth ---
 export const register = (email: string, password: string) =>

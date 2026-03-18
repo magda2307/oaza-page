@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getCat, getCats } from '@/lib/api'
+import { getCat, getRelatedCats } from '@/lib/api'
 import type { Cat } from '@/types'
 import { CatTags, CatTagsCompact } from '@/components/CatTags'
 import { ageLabel } from '@/lib/format'
@@ -91,10 +91,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function KotPage({ params }: Props) {
   const { id } = await params
 
-  // Fetch cat + all cats in parallel
-  const [catResult, allCatsResult] = await Promise.allSettled([
+  // Fetch cat + related cats in parallel
+  const [catResult, relatedResult] = await Promise.allSettled([
     getCat(Number(id)),
-    getCats(),
+    getRelatedCats(Number(id)),
   ])
   if (catResult.status !== 'fulfilled') notFound()
   const cat = catResult.value
@@ -124,18 +124,9 @@ export default async function KotPage({ params }: Props) {
 
   const idealHomeBullets  = deriveIdealHomeBullets(tags)
 
-  // Related cats — sorted by tag overlap (O(1) Set lookups), fallback to static
-  let relatedCats: Cat[] = []
-  if (allCatsResult.status === 'fulfilled') {
-    const tagSet = new Set(tags)
-    const others = allCatsResult.value.items.filter((c) => c.id !== cat.id)
-    const scored = others.map((c) => ({
-      c,
-      score: (c.tags ?? []).filter((t) => tagSet.has(t)).length,
-    }))
-    scored.sort((a, b) => b.score - a.score || b.c.id - a.c.id)
-    relatedCats = scored.slice(0, 3).map((x) => x.c)
-  }
+  // Related cats — from dedicated endpoint, fallback to static
+  let relatedCats: Cat[] =
+    relatedResult.status === 'fulfilled' ? relatedResult.value : []
   if (relatedCats.length === 0) {
     relatedCats = RELATED_FALLBACK.filter((c) => c.id !== cat.id).slice(0, 3)
   }

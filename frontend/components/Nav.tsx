@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 
@@ -14,13 +15,6 @@ const navLinks = [
   { href: '/o-nas',          label: 'O nas' },
 ]
 
-function PawIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <path d="M4.5 9.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm15 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm-5-5a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm-10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM12 8c-3.87 0-7 3.13-7 7 0 2.76 2.24 5 5 5h4c2.76 0 5-2.24 5-5 0-3.87-3.13-7-7-7z" />
-    </svg>
-  )
-}
 
 export default function Nav() {
   const pathname = usePathname()
@@ -57,10 +51,6 @@ export default function Nav() {
     ? 'bg-transparent border-transparent'
     : 'bg-white/95 backdrop-blur-md border-stone-200 shadow-sm'
 
-  const logoClasses = isTransparent
-    ? 'text-white'
-    : 'text-oaza-green'
-
   const linkBaseClasses = isTransparent
     ? 'text-white/80 hover:text-white transition-colors'
     : 'text-stone-600 hover:text-oaza-green transition-colors'
@@ -84,12 +74,15 @@ export default function Nav() {
       <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
 
         {/* Logo */}
-        <Link
-          href="/"
-          className={`text-xl font-bold tracking-tight shrink-0 flex items-center ${logoClasses}`}
-        >
-          <PawIcon className="w-5 h-5 fill-current inline-block mr-1.5 -mt-0.5" />
-          Oaza
+        <Link href="/" className="shrink-0 flex items-center">
+          <Image
+            src="/logo.png"
+            alt="Kocia Oaza"
+            width={44}
+            height={44}
+            className={`object-contain transition-all duration-300 ${isTransparent ? 'brightness-0 invert' : ''}`}
+            priority
+          />
         </Link>
 
         {/* Desktop nav links */}
