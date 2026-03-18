@@ -5,12 +5,24 @@
  */
 
 import type { Metadata } from 'next'
-import type { ReactNode } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { CatTags, CatTagsCompact } from '@/components/CatTags'
 import { ageLabel } from '@/lib/format'
 import { StickyAdoptCTA } from '@/components/StickyAdoptCTA'
+import { PhotoCarousel } from '@/components/PhotoCarousel'
+import { Section, Fact, CompatBadge } from '@/components/CatProfileSections'
+import {
+  PERSONALITY_TAGS,
+  COMPAT_POSITIVE_TAGS,
+  COMPAT_CAUTION_TAGS,
+  HEALTH_SERIOUS_TAGS,
+  HEALTH_SPECIAL_TAGS,
+  MEDICAL_CONTEXT,
+  getHonestTruth,
+  getCompatStatus,
+  deriveIdealHomeBullets,
+} from '@/lib/catProfile'
 
 export const metadata: Metadata = {
   title: 'Marchewka — Oaza (demo)',
@@ -26,6 +38,11 @@ const DEMO_CAT = {
   breed: 'Dachowiec',
   is_adopted: false,
   photo_url: 'https://static.pomagam.pl/media/project_photos/cache/GXTYZ5QBlsmN.jpg',
+  photos: [
+    'https://static.pomagam.pl/media/project_photos/cache/GXTYZ5QBlsmN.jpg',
+    'https://static.pomagam.pl/media/project_photos/cache/cNb7X85pgsIn.jpg',
+    'https://static.pomagam.pl/media/project_photos/cache/TXAM54Avlbaf.jpg',
+  ],
   description:
     'Marchewka trafiła do nas po wypadku drogowym trzy lata temu. Straciła tylną łapę — ale nie straciła ani grama osobowości. ' +
     'Pierwszego tygodnia chowała się pod łóżkiem. Drugiego zaczęła wychodzić na kolację. Trzeciego usiadła obok ciebie na kanapie i mruczała przez całą noc. ' +
@@ -73,91 +90,6 @@ const DEMO_RELATED = [
   },
 ]
 
-// ── Tag sets ──────────────────────────────────────────────────────────────────
-
-const PERSONALITY_TAGS = [
-  'przytulasek', 'zabawny', 'spokojny', 'towarzyski', 'ciekawski',
-  'gadatliwy', 'niezalezny', 'czuly', 'energiczny', 'zrownowazona',
-  'niesmialy', 'plochliwy',
-]
-const COMPAT_POSITIVE_TAGS = [
-  'lubi_koty', 'lubi_psy', 'lubi_dzieci', 'tylko_do_domu',
-  'dla_poczatkujacych', 'para_nierozlaczna',
-]
-const COMPAT_CAUTION_TAGS = [
-  'jako_jedynak', 'wymaga_doswiadczenia', 'potrzebuje_ciszy',
-  'nie_dla_dzieci', 'agresywny',
-]
-const HEALTH_SERIOUS_TAGS = ['fiv', 'felv', 'nowotwor', 'terminalnie_chory', 'opieka_paliatywna']
-const HEALTH_SPECIAL_TAGS = [
-  'senior', 'kociak', 'trojnog', 'niewidomy', 'gluchy', 'choroba_nerek',
-  'cukrzyca', 'choroba_serca', 'astma', 'ch_chwiejny', 'po_wypadku',
-  'wymaga_lekow', 'po_operacji', 'bezzebny', 'w_leczeniu',
-]
-
-const MEDICAL_CONTEXT: Record<string, string> = {
-  fiv: 'Kot FIV+ może żyć wiele lat. Wirus nie przenosi się na ludzi. Potrzebuje tylko domu — jak każdy inny.',
-  felv: 'FeLV wymaga monitoringu i opieki weterynaryjnej. Nie przenosi się na ludzi ani psy.',
-  nowotwor: 'Leczony onkologicznie. Regularnie pod opieką weterynarza.',
-  terminalnie_chory: 'Leczenie nieuleczalne — celem jest komfort i jakość ostatnich miesięcy.',
-  opieka_paliatywna: 'Wymaga opieki paliatywnej: leki, wizyty weterynaryjne, cisza i spokój.',
-  cukrzyca: 'Wymaga regularnych zastrzyków insuliny, dwa razy dziennie. Schemat szybko staje się rutyną.',
-  choroba_nerek: 'Wymaga specjalnej diety i regularnych badań krwi.',
-  choroba_serca: 'Pod stałą opieką kardiologa weterynaryjnego.',
-  astma: 'Wymaga inhalatora przy atakach. Unikamy dymu, zapachów, środków czystości.',
-  trojnog: 'Trzy łapy działają tak samo jak cztery. Adaptuje się szybko.',
-  niewidomy: 'Niewidomy kot w stabilnym otoczeniu radzi sobie świetnie. Nie przestawiaj mebli.',
-  gluchy: 'Głuchota nie przeszkadza w mruczeniu. Komunikacja przez dotyk i wibracje.',
-  bezzebny: 'Bez zębów — mokra karma lub namoczona sucha. Nic mu nie brakuje.',
-  wymaga_lekow: 'Regularnie przyjmuje leki. Dawkowanie jest proste, po kilku dniach staje się nawykiem.',
-  po_wypadku: 'Przeszedł poważny wypadek. Zrehabilitowany — gotowy na spokojny dom.',
-  po_operacji: 'Po operacji — w pełni wyleczony. Regularne kontrole weterynaryjne.',
-  w_leczeniu: 'Aktualnie w trakcie leczenia. Stabilny i monitorowany.',
-  senior: 'Senior potrzebuje ciepłego miejsca i spokojnego rytmu. Nie wymaga dużo — za to daje stabilną obecność.',
-}
-
-// ── Helper components ─────────────────────────────────────────────────────────
-
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="pt-10 mt-10 border-t border-stone-100">
-      <h2 className="font-display font-bold text-xl text-stone-900 mb-5">{title}</h2>
-      {children}
-    </section>
-  )
-}
-
-function Fact({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-start justify-between gap-4 py-2.5 border-b border-stone-100 last:border-0">
-      <span className="text-sm text-stone-400 shrink-0">{label}</span>
-      <span className="text-sm text-stone-800 font-medium text-right">{value}</span>
-    </div>
-  )
-}
-
-type CompatStatus = 'yes' | 'no' | 'unknown'
-function CompatBadge({ status, label }: { status: CompatStatus; label: string }) {
-  const styles: Record<CompatStatus, { wrapper: string; icon: string; iconColor: string; labelColor: string }> = {
-    yes:     { wrapper: 'bg-emerald-50 border border-emerald-200', icon: '✓', iconColor: 'text-emerald-700', labelColor: 'text-stone-700' },
-    no:      { wrapper: 'bg-rose-50 border border-rose-200',       icon: '✗', iconColor: 'text-rose-600',    labelColor: 'text-stone-700' },
-    unknown: { wrapper: 'bg-stone-50 border border-stone-200',     icon: '?', iconColor: 'text-stone-400',   labelColor: 'text-stone-400' },
-  }
-  const s = styles[status]
-  return (
-    <div className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 ${s.wrapper}`}>
-      <span className={`text-sm font-bold leading-none ${s.iconColor}`}>{s.icon}</span>
-      <span className={`text-sm font-medium ${s.labelColor}`}>{label}</span>
-    </div>
-  )
-}
-
-function getCompatStatus(tags: string[], yesTag?: string, noTag?: string): CompatStatus {
-  if (yesTag && tags.includes(yesTag)) return 'yes'
-  if (noTag  && tags.includes(noTag))  return 'no'
-  return 'unknown'
-}
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function DemoKotPage() {
@@ -166,39 +98,17 @@ export default function DemoKotPage() {
 
   const ageLine = [ageLabel(cat.age_years), cat.breed].filter(Boolean).join(' · ')
 
-  const personalityTags    = tags.filter(t => PERSONALITY_TAGS.includes(t))
-  const cautionTags        = tags.filter(t => COMPAT_CAUTION_TAGS.includes(t))
-  const hasPersonality     = personalityTags.length > 0 || cautionTags.length > 0
-  const hasCompat          = [...COMPAT_POSITIVE_TAGS, ...COMPAT_CAUTION_TAGS].some(t => tags.includes(t))
-  const hasPairTag         = tags.includes('para_nierozlaczna')
-  const healthSeriousTags  = tags.filter(t => HEALTH_SERIOUS_TAGS.includes(t))
-  const healthSpecialTags  = tags.filter(t => HEALTH_SPECIAL_TAGS.includes(t))
-  const hasHealth          = healthSeriousTags.length > 0 || healthSpecialTags.length > 0
-  const hasSpecialNeeds    = healthSeriousTags.length > 0 || healthSpecialTags.length > 0
-
-  const honestTruth = tags.includes('po_wypadku') || tags.includes('trojnog')
-    ? 'Przeżył wypadek. Ciało się goi. Chęć do życia jest nienaruszona.'
-    : tags.includes('senior')
-    ? 'Dojrzały, spokojny, wdzięczny. Wie, czego chce — i nie będzie Cię tego uczyć.'
-    : null
-
-  const idealHomeBullets: string[] = []
-  if (tags.includes('niesmialy') || tags.includes('plochliwy') || tags.includes('potrzebuje_ciszy'))
-    idealHomeBullets.push('Spokojne, ciche otoczenie — bez głośnej muzyki, bez zamieszania')
-  if (tags.includes('jako_jedynak'))
-    idealHomeBullets.push('Najlepiej bez innych kotów, przynajmniej na początku')
-  if (tags.includes('nie_dla_dzieci'))
-    idealHomeBullets.push('Nie dla rodzin z małymi dziećmi')
-  if (tags.includes('tylko_do_domu'))
-    idealHomeBullets.push('Dom bez wyjścia na zewnątrz — kot wyłącznie domowy')
-  if (tags.includes('wymaga_doswiadczenia'))
-    idealHomeBullets.push('Opiekun z doświadczeniem w pracy z nieśmiałymi lub chorymi kotami')
-  if (tags.includes('dla_poczatkujacych'))
-    idealHomeBullets.push('Świetny wybór dla kogoś, kto adoptuje kota po raz pierwszy')
-  if (tags.includes('para_nierozlaczna'))
-    idealHomeBullets.push('Musi być adoptowany razem ze swoim partnerem — nierozłączna para')
-  if (tags.includes('wymaga_lekow') || tags.includes('cukrzyca'))
-    idealHomeBullets.push('Właściciel gotowy na codzienną rutynę podawania leków')
+  const personalityTags   = tags.filter((t) => PERSONALITY_TAGS.includes(t))
+  const cautionTags       = tags.filter((t) => COMPAT_CAUTION_TAGS.includes(t))
+  const hasPersonality    = personalityTags.length > 0 || cautionTags.length > 0
+  const hasCompat         = [...COMPAT_POSITIVE_TAGS, ...COMPAT_CAUTION_TAGS].some((t) => tags.includes(t))
+  const hasPairTag        = tags.includes('para_nierozlaczna')
+  const healthSeriousTags = tags.filter((t) => HEALTH_SERIOUS_TAGS.includes(t))
+  const healthSpecialTags = tags.filter((t) => HEALTH_SPECIAL_TAGS.includes(t))
+  const hasHealth         = healthSeriousTags.length > 0 || healthSpecialTags.length > 0
+  const hasSpecialNeeds   = hasHealth
+  const honestTruth       = getHonestTruth(tags)
+  const idealHomeBullets  = deriveIdealHomeBullets(tags)
 
   const statusBadge: 'special' | 'available' = hasSpecialNeeds ? 'special' : 'available'
 
@@ -208,7 +118,8 @@ export default function DemoKotPage() {
       {/* Demo ribbon */}
       <div className="bg-amber-400 text-amber-950 text-center py-2 px-4">
         <p className="text-xs font-semibold tracking-wide uppercase">
-          Podgląd projektu — przykładowy profil kota · <Link href="/koty" className="underline">prawdziwe koty →</Link>
+          Podgląd projektu — przykładowy profil kota ·{' '}
+          <Link href="/koty" className="underline">prawdziwe koty →</Link>
         </p>
       </div>
 
@@ -217,25 +128,20 @@ export default function DemoKotPage() {
         <div className="max-w-5xl mx-auto px-4 pt-10 pb-14 sm:pt-14">
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-8 lg:gap-12 items-start">
 
-            {/* ── Photo (left on desktop, top on mobile) ── */}
-            <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-stone-200">
-              <Image
-                src={cat.photo_url}
+            {/* ── Photo / Carousel ── */}
+            <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-stone-200 shadow-[0_8px_40px_rgba(0,0,0,0.14)]">
+              <PhotoCarousel
+                photos={cat.photos}
                 alt={cat.name}
-                fill
-                priority
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover duration-500"
+                overlay={
+                  healthSeriousTags.length > 0 || healthSpecialTags.length > 0 ? (
+                    <CatTagsCompact tags={[...healthSeriousTags, ...healthSpecialTags].slice(0, 2)} />
+                  ) : undefined
+                }
               />
-              <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-              {(healthSeriousTags.length > 0 || healthSpecialTags.length > 0) && (
-                <div className="absolute bottom-4 left-4">
-                  <CatTagsCompact tags={[...healthSeriousTags, ...healthSpecialTags].slice(0, 2)} />
-                </div>
-              )}
             </div>
 
-            {/* ── Text content (right on desktop, bottom on mobile) ── */}
+            {/* ── Text content ── */}
             <div className="lg:pt-2">
               <div className="mb-4">
                 {statusBadge === 'special' ? (
@@ -284,7 +190,6 @@ export default function DemoKotPage() {
                 </Link>
               </p>
 
-              {/* Description */}
               <p className="mt-8 text-stone-600 leading-relaxed text-base border-t border-stone-200/60 pt-7">
                 {cat.description}
               </p>
@@ -355,7 +260,7 @@ export default function DemoKotPage() {
             {hasHealth && (
               <Section title="Zdrowie">
                 <div className="space-y-3">
-                  {healthSeriousTags.map(tag => (
+                  {healthSeriousTags.map((tag) => (
                     <div key={tag} className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 flex flex-col gap-2">
                       <CatTags tags={[tag]} size="sm" />
                       {MEDICAL_CONTEXT[tag] && (
@@ -363,7 +268,7 @@ export default function DemoKotPage() {
                       )}
                     </div>
                   ))}
-                  {healthSpecialTags.map(tag => (
+                  {healthSpecialTags.map((tag) => (
                     <div key={tag} className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 flex flex-col gap-2">
                       <CatTags tags={[tag]} size="sm" />
                       {MEDICAL_CONTEXT[tag] && (
@@ -457,11 +362,12 @@ export default function DemoKotPage() {
             <h2 className="font-display font-bold text-2xl text-stone-900">Inne koty czekają</h2>
             <Link href="/koty" className="text-sm font-semibold text-oaza-green hover:underline">Wszystkie →</Link>
           </div>
-          {/* Horizontal scroll on mobile, 3-col grid on sm+ */}
           <div className="flex gap-4 overflow-x-auto -mx-4 px-4 pb-2 snap-x snap-mandatory sm:grid sm:grid-cols-3 sm:overflow-visible sm:mx-0 sm:px-0 sm:pb-0">
             {DEMO_RELATED.map((rc) => {
-              const rcAge = rc.age_years !== null ? ageLabel(rc.age_years) : null
-              const rcLine = [rcAge, rc.breed].filter(Boolean).join(' · ')
+              const rcLine = [
+                rc.age_years !== null ? ageLabel(rc.age_years) : null,
+                rc.breed,
+              ].filter(Boolean).join(' · ')
               return (
                 <Link
                   key={rc.id}
