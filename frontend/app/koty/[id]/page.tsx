@@ -302,78 +302,115 @@ export default async function KotPage({ params }: Props) {
         </div>
       )}
 
-      {/* ── Hero ─────────────────────────────────────────────────────────────── */}
-      <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] bg-stone-100 overflow-hidden">
-        {cat.photo_url ? (
-          <Image
-            src={cat.photo_url}
-            alt={cat.name}
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover duration-500"
-          />
-        ) : (
-          <div className="w-full h-full bg-stone-200" />
-        )}
+      {/* ── Hero — photo left, data right ───────────────────────────────────── */}
+      <section className="bg-oaza-warm">
+        <div className="max-w-5xl mx-auto px-4 pt-10 pb-14 sm:pt-14">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
 
-        {/* Bottom gradient */}
-        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none" />
-
-        {/* Cat name + subtitle — bottom-left */}
-        <div className="absolute bottom-6 left-6 sm:bottom-10 sm:left-10">
-          <h1 className="font-display font-bold text-5xl sm:text-6xl lg:text-7xl text-white leading-none tracking-[-0.03em]">
-            {cat.name}
-          </h1>
-          {ageLine && (
-            <p className="text-white/70 text-base sm:text-lg mt-2 font-sans">{ageLine}</p>
-          )}
-          {/* Personality chips — desktop only */}
-          {personalityTags.length > 0 && (
-            <div className="hidden sm:block mt-3">
-              <CatTagsCompact tags={personalityTags.slice(0, 4)} />
+            {/* ── Photo (left on desktop, top on mobile) ── */}
+            <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-stone-200">
+              {cat.photo_url ? (
+                <Image
+                  src={cat.photo_url}
+                  alt={cat.name}
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover duration-500"
+                />
+              ) : (
+                <div className="w-full h-full bg-stone-200" />
+              )}
+              {/* Soft bottom gradient */}
+              <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+              {/* Health chips overlaid bottom-left */}
+              {(healthSeriousTags.length > 0 || healthSpecialTags.length > 0) && (
+                <div className="absolute bottom-4 left-4">
+                  <CatTagsCompact tags={[...healthSeriousTags, ...healthSpecialTags].slice(0, 2)} />
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Status badge — top-right */}
-        <div className="absolute top-5 right-5">
-          {statusBadge === 'adopted' && (
-            <span className="bg-white/90 backdrop-blur-sm text-stone-500 text-xs font-semibold px-3 py-1.5 rounded-full">
-              Zaadoptowany
-            </span>
-          )}
-          {statusBadge === 'special' && (
-            <span className="bg-oaza-rust text-white text-xs font-semibold px-3 py-1.5 rounded-full">
-              Specjalne potrzeby
-            </span>
-          )}
-          {statusBadge === 'available' && (
-            <span className="bg-oaza-green text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse" />
-              Szuka domu
-            </span>
-          )}
-        </div>
-      </div>
+            {/* ── Text content (right on desktop, bottom on mobile) ── */}
+            <div className="lg:pt-2">
+              {/* Status badge */}
+              <div className="mb-4">
+                {statusBadge === 'adopted' && (
+                  <span className="bg-stone-200 text-stone-600 text-xs font-semibold px-3 py-1.5 rounded-full">
+                    Zaadoptowany
+                  </span>
+                )}
+                {statusBadge === 'special' && (
+                  <span className="bg-oaza-rust text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+                    Specjalne potrzeby
+                  </span>
+                )}
+                {statusBadge === 'available' && (
+                  <span className="bg-oaza-green text-white text-xs font-semibold px-3 py-1.5 rounded-full inline-flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse" />
+                    Szuka domu
+                  </span>
+                )}
+              </div>
 
-      {/* ── Mobile CTA strip (also acts as IntersectionObserver sentinel) ─────── */}
-      {!cat.is_adopted && (
-        <div id="mobile-cta-strip" className="lg:hidden px-4 py-4 flex gap-3 border-b border-stone-100">
-          <Link
-            href={`/koty/${cat.id}/aplikuj`}
-            className="flex-1 flex items-center justify-center bg-oaza-rust text-white font-semibold text-sm px-4 py-3 rounded-full hover:opacity-90 transition-opacity text-center"
-          >
-            Złóż podanie
-          </Link>
-          <Link
-            href="/kontakt"
-            className="flex-1 flex items-center justify-center border border-stone-300 text-stone-600 font-semibold text-sm px-4 py-3 rounded-full hover:border-stone-400 transition-colors text-center"
-          >
-            Pytania?
-          </Link>
+              {/* Name */}
+              <h1 className="font-display font-bold text-5xl sm:text-6xl text-stone-900 leading-[1.0] tracking-[-0.03em]">
+                {cat.name}
+              </h1>
+
+              {/* Age / breed */}
+              {ageLine && (
+                <p className="text-stone-500 text-lg mt-3 font-sans">{ageLine}</p>
+              )}
+
+              {/* Personality chips */}
+              {personalityTags.length > 0 && (
+                <div className="mt-5">
+                  <CatTagsCompact tags={personalityTags.slice(0, 5)} />
+                </div>
+              )}
+
+              {/* CTAs — also acts as the StickyAdoptCTA sentinel */}
+              {!cat.is_adopted ? (
+                <div id="mobile-cta-strip" className="mt-8 flex flex-col sm:flex-row gap-3">
+                  <Link
+                    href={`/koty/${cat.id}/aplikuj`}
+                    className="flex items-center justify-center bg-oaza-rust text-white font-semibold px-7 py-4 rounded-full hover:opacity-90 transition-opacity text-center"
+                  >
+                    Złóż podanie o adopcję
+                  </Link>
+                  <Link
+                    href="/jak-adoptowac"
+                    className="flex items-center justify-center border border-oaza-green text-oaza-green font-semibold px-6 py-3.5 rounded-full hover:bg-oaza-green hover:text-white transition-colors text-center"
+                  >
+                    Jak to działa?
+                  </Link>
+                </div>
+              ) : (
+                <div className="mt-8">
+                  <Link
+                    href="/koty"
+                    className="inline-flex items-center justify-center bg-oaza-green text-white font-semibold px-7 py-4 rounded-full hover:opacity-90 transition-opacity"
+                  >
+                    Przeglądaj inne koty
+                  </Link>
+                </div>
+              )}
+
+              {/* Donate nudge */}
+              {!cat.is_adopted && (
+                <p className="mt-5 text-sm text-stone-400">
+                  Nie możesz adoptować?{' '}
+                  <Link href="/wspieraj" className="text-oaza-rust font-semibold hover:underline underline-offset-2">
+                    Wesprzyj leczenie →
+                  </Link>
+                </p>
+              )}
+            </div>
+
+          </div>
         </div>
-      )}
+      </section>
 
       {/* ── Body ─────────────────────────────────────────────────────────────── */}
       <div className="max-w-5xl mx-auto px-4 py-14">
