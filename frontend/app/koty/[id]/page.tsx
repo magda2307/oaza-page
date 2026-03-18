@@ -3,9 +3,11 @@ import type { ReactNode } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getCat } from '@/lib/api'
+import { getCat, getCats } from '@/lib/api'
+import type { Cat } from '@/types'
 import { CatTags, CatTagsCompact } from '@/components/CatTags'
 import { ageLabel } from '@/lib/format'
+import { StickyAdoptCTA } from '@/components/StickyAdoptCTA'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -63,6 +65,44 @@ const MEDICAL_CONTEXT: Record<string, string> = {
   w_leczeniu: 'Aktualnie w trakcie leczenia. Stabilny i monitorowany.',
   senior: 'Senior potrzebuje ciepłego miejsca i spokojnego rytmu. Nie wymaga dużo — za to daje stabilną obecność.',
 }
+
+// ── Related cats static fallback ──────────────────────────────────────────────
+
+const RELATED_FALLBACK: Cat[] = [
+  {
+    id: -1,
+    name: 'Marchewka',
+    age_years: 8,
+    breed: 'Dachowiec',
+    description: null,
+    photo_url: 'https://static.pomagam.pl/media/project_photos/cache/GXTYZ5QBlsmN.jpg',
+    is_adopted: false,
+    tags: ['po_wypadku', 'trojnog', 'senior'],
+    created_at: '',
+  },
+  {
+    id: -2,
+    name: 'Dragon',
+    age_years: 5,
+    breed: 'Dachowiec',
+    description: null,
+    photo_url: 'https://static.pomagam.pl/media/project_photos/cache/cNb7X85pgsIn.jpg',
+    is_adopted: false,
+    tags: ['fiv', 'spokojny', 'tylko_do_domu'],
+    created_at: '',
+  },
+  {
+    id: -3,
+    name: 'Karmel',
+    age_years: 7,
+    breed: 'Dachowiec',
+    description: null,
+    photo_url: 'https://static.pomagam.pl/media/project_photos/cache/qC8KyJ-hffJ-.jpg',
+    is_adopted: false,
+    tags: ['nowotwor', 'w_leczeniu', 'spokojny'],
+    created_at: '',
+  },
+]
 
 // ── Helper functions ───────────────────────────────────────────────────────────
 
