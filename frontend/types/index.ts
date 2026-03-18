@@ -4,6 +4,7 @@ export interface Cat {
   age_years: number | null
   breed: string | null
   description: string | null
+  sex: 'm' | 'f' | 'unknown' | null
   photo_url: string | null
   photos?: string[]
   is_adopted: boolean
