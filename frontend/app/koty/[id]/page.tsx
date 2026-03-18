@@ -261,6 +261,24 @@ export default async function KotPage({ params }: Props) {
 
   const idealHomeBullets = deriveIdealHomeBullets(tags)
 
+  // Fetch related cats — sorted by tag overlap, fallback to static
+  let relatedCats: Cat[] = []
+  try {
+    const allCats = await getCats()
+    const others = allCats.items.filter((c) => c.id !== cat.id)
+    const scored = others.map((c) => ({
+      c,
+      score: (c.tags ?? []).filter((t) => tags.includes(t)).length,
+    }))
+    scored.sort((a, b) => b.score - a.score || b.c.id - a.c.id)
+    relatedCats = scored.slice(0, 3).map((x) => x.c)
+  } catch {
+    // API unavailable — static fallback below
+  }
+  if (relatedCats.length === 0) {
+    relatedCats = RELATED_FALLBACK.filter((c) => c.id !== cat.id).slice(0, 3)
+  }
+
   // Status badge variant
   const statusBadge: 'adopted' | 'special' | 'available' = cat.is_adopted
     ? 'adopted'
@@ -593,51 +611,59 @@ export default async function KotPage({ params }: Props) {
         <div className="max-w-5xl mx-auto px-4">
           <div className="flex items-baseline justify-between mb-8">
             <h2 className="font-display font-bold text-2xl text-stone-900">Inne koty czekają</h2>
-            <Link
-              href="/koty"
-              className="text-sm font-semibold text-oaza-green hover:underline"
-            >
+            <Link href="/koty" className="text-sm font-semibold text-oaza-green hover:underline">
               Wszystkie →
             </Link>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {[
-              {
-                name: 'Marchewka',
-                note: '8 lat · po wypadku',
-                photo: 'https://static.pomagam.pl/media/project_photos/cache/GXTYZ5QBlsmN.jpg',
-              },
-              {
-                name: 'Dragon',
-                note: '5 lat · FIV+',
-                photo: 'https://static.pomagam.pl/media/project_photos/cache/cNb7X85pgsIn.jpg',
-              },
-              {
-                name: 'Karmel',
-                note: '7 lat · w leczeniu',
-                photo: 'https://static.pomagam.pl/media/project_photos/cache/qC8KyJ-hffJ-.jpg',
-              },
-            ].map(({ name, note, photo }) => (
-              <Link key={name} href="/koty" className="group block">
-                <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-stone-100">
-                  <Image
-                    src={photo}
-                    alt={name}
-                    fill
-                    sizes="(max-width: 640px) 50vw, 33vw"
-                    className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
-                  />
-                  <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none" />
-                  <div className="absolute bottom-3 left-3">
-                    <p className="text-white font-bold text-sm font-display">{name}</p>
-                    <p className="text-white/70 text-xs">{note}</p>
+          {/* Horizontal scroll on mobile, 3-col grid on sm+ */}
+          <div className="flex gap-4 overflow-x-auto -mx-4 px-4 pb-2 snap-x snap-mandatory sm:grid sm:grid-cols-3 sm:overflow-visible sm:mx-0 sm:px-0 sm:pb-0">
+            {relatedCats.map((rc) => {
+              const isStatic  = rc.id < 0
+              const rcAgeLine = [
+                rc.age_years !== null ? ageLabel(rc.age_years) : null,
+                rc.breed ?? null,
+              ].filter(Boolean).join(' · ')
+              return (
+                <Link
+                  key={rc.id}
+                  href={isStatic ? '/koty' : `/koty/${rc.id}`}
+                  className="group block flex-shrink-0 w-[72vw] sm:w-auto snap-start"
+                >
+                  <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-stone-100">
+                    {rc.photo_url ? (
+                      <Image
+                        src={rc.photo_url}
+                        alt={rc.name}
+                        fill
+                        sizes="(max-width: 640px) 72vw, 33vw"
+                        className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-stone-200" />
+                    )}
+                    {/* Adopted overlay */}
+                    {rc.is_adopted && (
+                      <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-[1px] flex items-center justify-center">
+                        <span className="bg-white/90 backdrop-blur-sm text-stone-600 text-xs font-semibold px-3 py-1.5 rounded-full">
+                          Znalazł dom
+                        </span>
+                      </div>
+                    )}
+                    <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none" />
+                    <div className="absolute bottom-3 left-3">
+                      <p className="text-white font-bold text-sm font-display">{rc.name}</p>
+                      {rcAgeLine && <p className="text-white/70 text-xs">{rcAgeLine}</p>}
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              )
+            })}
           </div>
         </div>
       </section>
+
+      {/* Sticky mobile CTA */}
+      {!cat.is_adopted && <StickyAdoptCTA catId={cat.id} catName={cat.name} />}
 
     </div>
   )
