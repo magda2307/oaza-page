@@ -8,6 +8,7 @@ import { CatTags, CatTagsCompact } from '@/components/CatTags'
 import { ageLabel } from '@/lib/format'
 import { StickyAdoptCTA } from '@/components/StickyAdoptCTA'
 import { PhotoCarousel } from '@/components/PhotoCarousel'
+import { AdminToolbar } from '@/components/AdminToolbar'
 import { Section, Fact, CompatBadge } from '@/components/CatProfileSections'
 import {
   PERSONALITY_TAGS,
