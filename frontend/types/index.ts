@@ -5,6 +5,7 @@ export interface Cat {
   breed: string | null
   description: string | null
   photo_url: string | null
+  photos?: string[]
   is_adopted: boolean
   tags: string[]
   created_at: string
